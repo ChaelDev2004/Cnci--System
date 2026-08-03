@@ -368,7 +368,7 @@
 <div class="minimal-card">
   <div class="table-header">
     <h3>Locations</h3>
-    <a href="{{ route('content.dashboard.admin.locations.create') }}" class="add-link">+ Add Location</a>
+    <a href="{{ route('admin.locations.create') }}" class="add-link">+ Add Location</a>
   </div>
 
   <table class="minimal-table">
@@ -395,8 +395,8 @@
           @endif
         </td>
         <td class="actions">
-          <a href="{{ route('locations.edit', $loc) }}" class="btn-minimal btn-minimal-secondary">Edit</a>
-          <form action="{{ route('locations.destroy', $loc) }}" method="POST" style="display:inline" onsubmit="return confirm('Delete location?')">
+          <a href="{{ route('admin.locations.edit', $loc) }}" class="btn-minimal btn-minimal-secondary">Edit</a>
+          <form action="{{ route('admin.locations.destroy', $loc) }}" method="POST" style="display:inline" onsubmit="return confirm('Delete location?')">
             @csrf
             @method('DELETE')
             <button class="btn-minimal btn-minimal-danger" type="submit">Delete</button>

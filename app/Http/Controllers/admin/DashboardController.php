@@ -48,7 +48,7 @@ class DashboardController extends Controller
             ->map(fn($m) => (int) ($eventsPerMonth[$m] ?? 0))
             ->values();
 
-        return view('content.dashboard.analytics', compact(
+        return view('content.dashboard.dashboards-analytics', compact(
             'stats',
             'eventsGrowth',
             'recentEvents',

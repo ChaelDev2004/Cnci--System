@@ -59,16 +59,23 @@ use App\Http\Controllers\Admin\SlideController;
 use App\Http\Controllers\Admin\HomeSettingsController;
 use App\Http\Controllers\Admin\EventsPageController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GalleryController;
+use App\Http\Controllers\Admin\CalendarController;
+use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\ContactFormController;
+use App\Http\Controllers\Admin\AccountSettingsController;
+use App\Http\Controllers\Admin\MenuController;
+use App\Http\Controllers\Admin\BranchAccountController;
 // Main Page Route
 // Route::get('/', [Analytics::class, 'index'])->name('dashboard-analytics');
 Route::get('/', [WelcomeController::class, 'index']);
-Route::get('/admin/dashboard', [DashboardController::class, 'index'])
-  ->name('admin.dashboard');
 
 Route::get('/Home-page-index', [App\Http\Controllers\HomeController::class, 'index'])->name('content.dashboard.admin.index');
 Route::get('/about', [App\Http\Controllers\aboutController::class, 'index'])->name('about');
 Route::get('/Event', [App\Http\Controllers\eventsPageController::class, 'index'])->name('content.dashboard.events');
 Route::get('/Find-Us', [App\Http\Controllers\findUsController::class, 'index'])->name('findus');
+Route::get('/Gallery', [App\Http\Controllers\GalleryPageController::class, 'index'])->name('gallery');
+Route::post('/contact', [ContactFormController::class, 'store'])->name('contact.store');
 Route::resource('leaders', LeaderController::class);
 
 Route::get('/pastor/{slug}', [App\Http\Controllers\Admin\PastorController::class, 'show'])->name('pastor.show');
@@ -88,8 +95,7 @@ Route::prefix('content/dashboard/admin')
       ->name('locations.create');
   });
 Route::resource('slides', App\Http\Controllers\Admin\SlideController::class)->except('show');
-Route::resource('locations', App\Http\Controllers\Admin\ChurchLocationController::class)->except('show');
-//pastorss route
+// pastors route
 
 Route::get('/Pastor/index', [PastorController::class, 'index'])
   ->name('content.dashboard.pastors.index');
@@ -108,7 +114,10 @@ Route::get('/Ministers/Index', [MinisterController::class, 'index'])
 Route::get('/Ministers/Edit', [MinisterController::class, 'edit'])
   ->name('content.dashboard.ministers.edit');
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'restrict_branch'])->prefix('admin')->name('admin.')->group(function () {
+  Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard');
+
   Route::get('/about-page', [App\Http\Controllers\Admin\AboutPageController::class, 'edit'])->name('content.dashboard.about');
 
   // About Page
@@ -129,6 +138,18 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
   Route::get('/Events-page', [EventsPageController::class, 'index'])
     ->name('events.index');
 
+  // Calendar
+  Route::get('/calendar', [CalendarController::class, 'index'])
+    ->name('calendar.index');
+  Route::get('/calendar/events', [CalendarController::class, 'events'])
+    ->name('calendar.events');
+  Route::post('/calendar/events', [CalendarController::class, 'store'])
+    ->name('calendar.store');
+  Route::put('/calendar/events/{event}', [CalendarController::class, 'update'])
+    ->name('calendar.update');
+  Route::delete('/calendar/events/{event}', [CalendarController::class, 'destroy'])
+    ->name('calendar.destroy');
+
   // Create Event Form
   Route::get('/Events-page/create', [EventsPageController::class, 'create'])
     ->name('events.create');
@@ -143,7 +164,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
   // Update Event
   Route::put('/Events-page/{event}', [EventsPageController::class, 'update'])
-    ->name('  events.update');
+    ->name('events.update');
 
   // Delete Event
   Route::delete('/Events-page/{event}', [EventsPageController::class, 'destroy'])
@@ -198,6 +219,42 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
   Route::resource('pastors', App\Http\Controllers\Admin\PastorController::class)->except('show');
   Route::resource('ministers', App\Http\Controllers\Admin\MinisterController::class)->except('show');
+
+  Route::resource('gallery', GalleryController::class)
+    ->except(['show'])
+    ->parameters(['gallery' => 'gallery']);
+
+  Route::resource('locations', ChurchLocationController::class)
+    ->except(['show']);
+
+  // Contact settings + inbox
+  Route::get('/contact', [ContactController::class, 'index'])
+    ->name('contact.index');
+  Route::put('/contact/settings', [ContactController::class, 'updateSettings'])
+    ->name('contact.settings');
+  Route::get('/contact/messages/{contact}', [ContactController::class, 'show'])
+    ->name('contact.show');
+  Route::delete('/contact/messages/{contact}', [ContactController::class, 'destroy'])
+    ->name('contact.destroy');
+  Route::post('/contact/messages/{contact}/read', [ContactController::class, 'markRead'])
+    ->name('contact.read');
+
+  // Account settings (profile + branding CMS)
+  Route::get('/account-settings', [AccountSettingsController::class, 'index'])
+    ->name('account.index');
+  Route::put('/account-settings/profile', [AccountSettingsController::class, 'updateProfile'])
+    ->name('account.profile');
+  Route::put('/account-settings/branding', [AccountSettingsController::class, 'updateBranding'])
+    ->name('account.branding');
+
+  Route::resource('menu', MenuController::class)->except(['show']);
+
+  // Branch accounts (super admin only)
+  Route::middleware('super_admin')->group(function () {
+    Route::resource('branches', BranchAccountController::class)
+      ->except(['show'])
+      ->parameters(['branches' => 'branch']);
+  });
 });
 //admin login to dashboard
 
@@ -210,12 +267,6 @@ Route::post('/login', [AuthController::class, 'login'])
 Route::post('/logout', [AuthController::class, 'logout'])
   ->name('logout');
 
-//admin login route
-
-Route::middleware('auth')->group(function () {
-  Route::get('/admin/dashboard', [AdminController::class, 'index'])
-    ->name('admin.dashboard');
-});
 // layout
 Route::get('/layouts/without-menu', [WithoutMenu::class, 'index'])->name('layouts-without-menu');
 Route::get('/layouts/without-navbar', [WithoutNavbar::class, 'index'])->name('layouts-without-navbar');

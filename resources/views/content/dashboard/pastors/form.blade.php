@@ -48,7 +48,26 @@
   <input type="file" name="image" accept="image/*">
   @if(isset($pastor) && $pastor->image)
   <div style="margin-top:10px;">
-    <img src="{{ asset('storage/' . $pastor->image) }}" style="max-width:200px; border-radius:10px;">
+    <img src="{{ asset('storage/' . $pastor->image) }}" style="max-width:200px; border-radius:10px;" alt="{{ $pastor->name }}">
+  </div>
+  @endif
+</div>
+
+<div class="form-group">
+  <label>Gallery Images</label>
+  <input type="file" name="gallery_images[]" accept="image/*" multiple>
+  <small style="display:block;margin-top:6px;color:#666;">Upload multiple photos for this pastor’s public gallery page.</small>
+  @if(isset($pastor) && $pastor->galleryImages && $pastor->galleryImages->count())
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-top:14px;">
+    @foreach($pastor->galleryImages as $galleryImage)
+    <label style="display:block;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;cursor:pointer;">
+      <img src="{{ asset('storage/' . $galleryImage->path) }}" alt="Gallery image" style="width:100%;height:100px;object-fit:cover;display:block;">
+      <span style="display:flex;align-items:center;gap:6px;padding:8px;font-size:12px;">
+        <input type="checkbox" name="delete_gallery[]" value="{{ $galleryImage->id }}">
+        Delete
+      </span>
+    </label>
+    @endforeach
   </div>
   @endif
 </div>

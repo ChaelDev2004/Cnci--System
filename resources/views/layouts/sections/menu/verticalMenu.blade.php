@@ -1,13 +1,23 @@
 @php
 use Illuminate\Support\Facades\Route;
+$brandName = isset($siteSettings) ? $siteSettings->brandName() : 'CNCI';
+$brandTagline = isset($siteSettings) ? $siteSettings->brandTagline() : '';
+$logoUrl = isset($siteSettings) ? $siteSettings->logoUrl() : asset('assets/img/avatars/cnciLogo.png');
+$menuItems = $menuData[0]->menu ?? [];
 @endphp
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
 
-    <!-- ! Hide app brand if navbar-full -->
     <div class="app-brand demo">
-        <a href="{{url('/')}}" class="app-brand-link">
-            <span class="app-brand-logo demo"><img src="{{ asset('assets/img/avatars/cnciLogo.png') }}" alt="CNCI Logo" width="55" height="55"></span>
-            <span class="app-brand-text demo menu-text fw-bold ms-2">CNCI </span>
+        <a href="{{ Route::has('admin.dashboard') ? route('admin.dashboard') : url('/admin/dashboard') }}" class="app-brand-link">
+            <span class="app-brand-logo demo">
+                <img src="{{ $logoUrl }}" alt="{{ $brandName }} Logo" width="55" height="55" style="object-fit:contain;">
+            </span>
+            <span class="app-brand-text demo menu-text fw-bold ms-2">
+                {{ $brandName }}
+                @if($brandTagline)
+                    <small class="d-block fw-normal" style="font-size:0.7rem;opacity:.75;line-height:1.1;">{{ $brandTagline }}</small>
+                @endif
+            </span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
@@ -19,46 +29,50 @@ use Illuminate\Support\Facades\Route;
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-        @foreach ($menuData[0]->menu as $menu)
+        @foreach ($menuItems as $menu)
 
-        {{-- adding active and open class if child is active --}}
-
-        {{-- menu headers --}}
         @if (isset($menu->menuHeader))
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">{{ __($menu->menuHeader) }}</span>
         </li>
         @else
-
-        {{-- active menu method --}}
         @php
-        $activeClass = null;
-        $currentRouteName = Route::currentRouteName();
+            $activeClass = null;
+            $currentRouteName = Route::currentRouteName() ?? '';
+            $menuSlug = $menu->slug ?? null;
 
-        if ($currentRouteName === $menu->slug) {
-        $activeClass = 'active';
-        }
-        elseif (isset($menu->submenu)) {
-        if (gettype($menu->slug) === 'array') {
-        foreach($menu->slug as $slug){
-        if (str_contains($currentRouteName,$slug) and strpos($currentRouteName,$slug) === 0) {
-        $activeClass = 'active open';
-        }
-        }
-        }
-        else{
-        if (str_contains($currentRouteName,$menu->slug) and strpos($currentRouteName,$menu->slug) === 0) {
-        $activeClass = 'active open';
-        }
-        }
-        }
+            if ($menuSlug && $currentRouteName === $menuSlug) {
+                $activeClass = 'active';
+            } elseif (isset($menu->submenu)) {
+                if (is_array($menuSlug)) {
+                    foreach ($menuSlug as $slug) {
+                        if ($currentRouteName === $slug || str_starts_with($currentRouteName, $slug . '.')) {
+                            $activeClass = 'active open';
+                            break;
+                        }
+                    }
+                } elseif ($menuSlug && (str_starts_with($currentRouteName, $menuSlug) || str_contains($currentRouteName, $menuSlug))) {
+                    $activeClass = 'active open';
+                }
+            } elseif ($menuSlug) {
+                $base = preg_replace('/\.index$/', '', $menuSlug);
+                if ($base && str_starts_with($currentRouteName, $base)) {
+                    $activeClass = 'active';
+                }
+            }
+
+            $href = 'javascript:void(0);';
+            if (!empty($menu->url)) {
+                $href = \Illuminate\Support\Str::startsWith($menu->url, ['http://', 'https://', '#'])
+                    ? $menu->url
+                    : url($menu->url);
+            }
         @endphp
 
-        {{-- main menu --}}
-        <li class="menu-item {{$activeClass}}">
-            <a href="{{ isset($menu->url) ? url($menu->url) : 'javascript:void(0);' }}"
+        <li class="menu-item {{ $activeClass }}">
+            <a href="{{ $href }}"
                 class="{{ isset($menu->submenu) ? 'menu-link menu-toggle' : 'menu-link' }}"
-                @if (isset($menu->target) && !empty($menu->target)) target="{{ $menu->target }}" @endif>
+                @if (!empty($menu->target)) target="{{ $menu->target }}" @endif>
 
                 @isset($menu->icon)
                 <i class="{{ $menu->icon }}"></i>
@@ -71,8 +85,11 @@ use Illuminate\Support\Facades\Route;
                     {{ $menu->badge[1] }}
                 </div>
                 @endisset
-
             </a>
+
+            @isset($menu->submenu)
+                @include('layouts.sections.menu.submenu', ['menu' => $menu->submenu])
+            @endisset
         </li>
         @endif
         @endforeach

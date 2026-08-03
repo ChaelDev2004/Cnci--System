@@ -20,6 +20,7 @@
     <td>{{ $pastor->church }}</td>
     <td>{{ $pastor->sort_order }}</td>
     <td class="actions">
+      <a href="{{ route('pastor.show', $pastor->id) }}" class="btn btn-secondary" target="_blank" rel="noopener">Gallery</a>
       <a href="{{ route('admin.pastors.edit', $pastor) }}" class="btn btn-secondary">Edit</a>
       <form action="{{ route('admin.pastors.destroy', $pastor) }}" method="POST" style="display:inline" onsubmit="return confirm('Delete this pastor?')">
         @csrf @method('DELETE')

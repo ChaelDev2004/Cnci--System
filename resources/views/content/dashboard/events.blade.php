@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CNCI Church · Events</title>
+  <title>{{ $siteSettings->brandName() }} · Events</title>
+  <link rel="icon" href="{{ $siteSettings->faviconUrl() }}" />
 
   <!-- Google Fonts & Font Awesome -->
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -12,6 +13,7 @@
 
   <!-- AOS CSS -->
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  @include('layouts.partials.public-styles')
 
   <style>
     /* ─── RESET / BASE ─────────────────────────────────────────── */
@@ -27,8 +29,8 @@
       background: #f8f6f0;
     }
 
-    /* ─── NAV (fixed) ──────────────────────────────────────────── */
-    nav {
+    /* ─── NAV (legacy, do not target shared .public-nav) ───────── */
+    nav:not(.public-nav) {
       position: fixed;
       top: 0;
       left: 0;
@@ -254,7 +256,7 @@
 
     /* ─── HERO (events) ────────────────────────────────────────── */
     .hero-section {
-      margin-top: 74px;
+      margin-top: 0;
       width: 100%;
       height: 60vh;
       min-height: 400px;
@@ -949,46 +951,8 @@
 
 <body>
 
-  <!-- ─── NAV ─────────────────────────────────────────────────── -->
-  <nav>
-    <div class="nav-inner">
-      <img class="nav-logo" src="{{ asset('assets/img/avatars/cnciLogo.png') }}" alt="CNCI Logo">
-      <a href="#" class="nav-brand">CNCI <span class="nav-brand-highlight">Rosales</span></a>
-      <ul class="nav-links">
-        <li><a href="">Home</a></li>
-        <li><a href="">About</a></li>
-        <li><a href="">Gallery</a></li>
-        <li><a href="" class="active">Events</a></li>
-        <li><a href="">Find Us</a></li>
-      </ul>
-      <a href="#" class="nav-cta">Plan a Visit</a>
-      <button class="nav-burger" id="burgerBtn1" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- MOBILE MENU -->
-  <div class="mob-menu" id="mobMenu">
-    <button class="mob-menu-close" id="mobClose" aria-label="Close">
-      <svg viewBox="0 0 24 24">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </svg>
-    </button>
-    <ul class="mob-links">
-      <li><a href="">Home</a></li>
-      <li><a href="">About</a></li>
-      <li><a href="">Gallery</a></li>
-      <li><a href="" class="active">Events</a></li>
-      <li><a href="">Find Us</a></li>
-    </ul>
-    <div class="mob-menu-footer">
-      <p>Sunday Services</p>
-      <p><span>9:00 AM</span> &nbsp;&amp;&nbsp; <span>11:00 AM</span></p>
-      <p style="margin-top:8px;color:rgba(255,255,255,0.22);">Plan a Visit &rarr;</p>
-    </div>
-  </div>
+  @php $activeNav = 'events'; $fixedNav = false; @endphp
+  @include('layouts.partials.public-nav')
 
   <!-- ─── HERO ─────────────────────────────────────────────────── -->
   <section class="hero-section">
@@ -1084,80 +1048,11 @@
   <div class="cta-banner" data-aos="zoom-in" data-aos-duration="800">
     <h2>Plan Your Visit</h2>
     <p>We'd love to welcome you in person. Let us know you're coming and we'll prepare a warm seat just for you.</p>
-    <button class="cta-btn" onclick="window.location.href='#'">I'm Coming &rarr;</button>
+    <button class="cta-btn" onclick="window.location.href='{{ url('/#findUs') }}'">I'm Coming &rarr;</button>
   </div>
 
-  <!-- ─── FOOTER ─────────────────────────────────────────────────── -->
-  <footer class="footer">
-    <div class="main-logo">
-      <img src="{{ asset('assets/img/avatars/cnciLogo.png') }}" alt="CNCI Logo">
-    </div>
-
-    <div class="line-horizontal"></div>
-
-    <div class="footer-nav-links">
-      <ul>
-        <li><a href="">Home</a></li>
-        <li><a href="">About</a></li>
-        <li><a href="">Gallery</a></li>
-        <li><a href="">Events</a></li>
-        <li><a href="{{ route('findus') }}">Find Us</a></li>
-      </ul>
-
-      <div class="other-info">
-        <h3>Email:</h3>
-        <p>cnciregion1@gmail.com</p>
-        <h3>Location:</h3>
-        <p>Region 1, Philippines</p>
-
-        <!-- Social Media -->
-        <div class="socmed">
-          <ul class="example-2">
-            <li class="icon-content">
-              <a href="#" data-social="spotify" aria-label="Spotify">
-                <div class="filled"></div>
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.52 17.34c-.24.36-.72.48-1.08.24-2.94-1.8-6.66-2.16-11.04-1.2-.42.12-.84-.12-.96-.54-.12-.42.12-.84.54-.96 4.8-1.08 8.94-.66 12.3 1.38.36.24.48.72.24 1.08zm1.44-3.24c-.3.42-.84.6-1.26.3-3.36-2.1-8.52-2.7-12.54-1.44-.48.18-1.02-.12-1.2-.6-.18-.48.12-1.02.6-1.2 4.5-1.44 10.14-.78 13.98 1.56.42.3.6.84.3 1.26zm.12-3.36c-4.02-2.4-10.68-2.64-14.52-1.44-.54.18-1.14-.12-1.32-.66-.18-.54.12-1.14.66-1.32 4.44-1.5 11.7-1.2 16.26 1.5.48.3.66.9.36 1.38-.3.42-.9.6-1.44.3z" />
-                </svg>
-              </a>
-              <span class="tooltip">Spotify</span>
-            </li>
-            <li class="icon-content">
-              <a href="#" data-social="pinterest" aria-label="Pinterest">
-                <div class="filled"></div>
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.08 3.16 9.43 7.62 11.18-.1-.95-.19-2.41.04-3.44.2-.93 1.33-5.65 1.33-5.65s-.34-.68-.34-1.68c0-1.57.91-2.74 2.04-2.74.96 0 1.42.72 1.42 1.59 0 .97-.62 2.42-.94 3.76-.27 1.12.56 2.04 1.67 2.04 2.01 0 3.56-2.12 3.56-5.18 0-2.71-1.95-4.6-4.73-4.6-3.22 0-5.11 2.41-5.11 4.9 0 .97.37 2.01.84 2.58.09.11.11.21.08.32-.09.38-.28 1.16-.32 1.32-.05.2-.17.24-.39.15-1.45-.68-2.35-2.79-2.35-4.49 0-3.65 2.65-7 7.64-7 4.01 0 7.12 2.86 7.12 6.67 0 3.98-2.51 7.18-5.99 7.18-1.17 0-2.27-.61-2.64-1.33 0 0-.58 2.2-.72 2.74-.26.99-.96 2.23-1.43 2.99C9.58 22.8 10.76 23 12 23c6.63 0 12-5.37 12-12S18.63 0 12 0z" />
-                </svg>
-              </a>
-              <span class="tooltip">Pinterest</span>
-            </li>
-            <li class="icon-content">
-              <a href="#" data-social="dribbble" aria-label="Dribbble">
-                <div class="filled"></div>
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.38 0 0 5.38 0 12s5.38 12 12 12 12-5.38 12-12S18.62 0 12 0zm9.96 11.18c-.28-.06-2.32-.48-4.66-.22.99-2.72 2.08-4.96 2.22-5.28 1.97 1.6 3.26 3.98 3.4 6.62-.32.06-.68.1-1.04.12-1.24.04-2.76-.12-3.88-.74-1.12-.62-2.16-1.44-2.16-1.44.04-.12.08-.24.12-.36.7-2.02 1.44-4.64 1.44-4.64 2.72.72 4.98 2.44 6.42 4.68-.48.16-1.82.46-3.84.58zm-8.84-2.91c.44.38 1.28 1.34 1.98 2.48-2.52.94-5.24 1.48-6.36 1.62-.14-.24-.28-.5-.4-.78-.66-1.62-1.72-3.32-1.86-3.58 0 0 1.42-.58 4.14-1.58.46.66 1.14 1.48 1.8 2.12-1.52.56-2.78 1.28-3.06 1.48.06.12.14.24.22.36.32.5.74 1.08 1.28 1.32.3.14.92.28 1.46.28-.04-.62.08-1.24.12-1.74.02-.2.04-.38.04-.46 1.08-.46 2.48-1.12 4.12-1.82 2.74-1.2 3.86-2.62 4.02-2.82.54.58.98 1.24 1.28 1.96-.76.44-2.08 1.12-3.64 1.72zm-4.72 4.34c.02.04.04.08.06.12.14.28.28.54.44.8-1.54.46-3.22.34-4.12.22.24-.42 1.18-1.72 3.32-2.96.12.08.24.16.36.24.46.38 1.06 1.04 1.74 1.58.32.26.64.48.96.68-1.14.46-2.04 1.04-2.66 1.64-1.12.94-1.34 1.86-1.34 1.86.26.08.52.14.78.2 1.6-.04 3.6-.68 5.18-2.2.74.32 1.54.56 2.32.72-1.26 1.96-3.32 3.34-5.72 3.72-.3.06-.6.1-.9.14.04-.06.08-.12.12-.18.34-.54.74-1.3.96-1.94.12-.34.2-.72.24-1.1.16.06.34.12.52.16 1.28.28 2.72.12 3.78-.24-1.38 2.12-3.74 3.66-6.44 4.02.1-.04.2-.08.3-.12 1.36-.48 2.94-1.74 3.94-3.58.32.12.66.22 1.02.32-1.14 2.18-2.98 3.62-4.78 4.14-.32.1-.66.16-1.02.18.06-.04.12-.08.16-.14.4-.46.88-1.14 1.12-1.82.12-.34.2-.72.24-1.08-.28.08-.56.12-.86.16-2.24.28-3.48-.36-4.16-.74.24-.26 1.04-.88 2.38-1.68.34.6.78 1.2 1.38 1.72-.08.34-.16.68-.22 1.02.02.04.06.06.08.1.28-.06.58-.14.86-.24 1.16-.44 2.26-1.44 3.06-2.96.44-.84.74-1.84.96-2.96 2.28.38 4.6.04 4.6.04-1.4 3.42-4.64 5.84-8.38 6.08-1.36.08-2.64-.22-3.78-.88-.1-.06-.2-.12-.3-.18.18-.04.36-.08.54-.14 2.48-.76 4.48-2.64 5.68-4.7.04-.06.06-.12.1-.18.14-.24.26-.48.38-.74z" />
-                </svg>
-              </a>
-              <span class="tooltip">Dribbble</span>
-            </li>
-            <li class="icon-content">
-              <a href="#" data-social="telegram" aria-label="Telegram">
-                <div class="filled"></div>
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.67 8.19l-1.66 7.75c-.15.64-.52.8-.97.5l-2.73-2.01-1.34 1.29c-.15.15-.28.28-.57.28l.2-2.99 5.52-4.99c.24-.21-.05-.33-.38-.12l-6.74 4.24-2.88-.9c-.62-.19-.63-.62.13-.92l11.18-4.31c.52-.19.98.13.81.9z" />
-                </svg>
-              </a>
-              <span class="tooltip">Telegram</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <p>© {{ date('Y') }} CNCI. All rights reserved.</p>
-    </div>
-  </footer>
+  @include('layouts.partials.public-footer')
+  @include('layouts.partials.public-scripts')
 
   <!-- ─── SCRIPTS ─────────────────────────────────────────────── -->
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -1169,31 +1064,6 @@
       disable: 'mobile'
     });
 
-    // ── Mobile menu ──
-    const mobMenu = document.getElementById('mobMenu');
-    const mobClose = document.getElementById('mobClose');
-    const burger = document.getElementById('burgerBtn1');
-
-    function openMenu() {
-      mobMenu.classList.add('open');
-      burger.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeMenu() {
-      mobMenu.classList.remove('open');
-      burger.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-
-    burger.addEventListener('click', () => mobMenu.classList.contains('open') ? closeMenu() : openMenu());
-    mobClose.addEventListener('click', closeMenu);
-    mobMenu.addEventListener('click', e => {
-      if (e.target === mobMenu) closeMenu();
-    });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeMenu();
-    });
 
     // ── Event card hover effect ──
     document.querySelectorAll('.event-card').forEach(card => {
@@ -1218,6 +1088,7 @@
       }
     });
   </script>
+
 </body>
 
 </html>

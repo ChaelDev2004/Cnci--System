@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pastor extends Model
 {
@@ -12,17 +13,21 @@ class Pastor extends Model
         'church',
         'sort_order',
         'image',
-        'bio', // Add this for pastor description
-        'email', // Add this
-        'phone', // Add this
-        'facebook', // Add social media
+        'bio',
+        'email',
+        'phone',
+        'facebook',
         'instagram',
         'youtube',
     ];
 
-    // Relationship with ChurchLocation
-    public function locations()
+    public function locations(): HasMany
     {
         return $this->hasMany(ChurchLocation::class);
+    }
+
+    public function galleryImages(): HasMany
+    {
+        return $this->hasMany(PastorImage::class)->orderBy('sort_order');
     }
 }

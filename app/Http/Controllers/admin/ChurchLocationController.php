@@ -6,83 +6,156 @@ use App\Http\Controllers\Controller;
 use App\Models\ChurchLocation;
 use App\Models\Pastor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ChurchLocationController extends Controller
 {
     public function index()
     {
-        $locations = ChurchLocation::with('pastor')->orderBy('sort_order')->get();
-        return view('locations.index', [
-            'locations' => $locations
+        $query = ChurchLocation::with('pastor')->orderBy('sort_order');
+        $this->scopeLocations($query);
+
+        return view('content.dashboard.admin.locations.index', [
+            'locations' => $query->get(),
         ]);
     }
 
     public function create()
     {
-        $pastors = Pastor::orderBy('name')->get();
-        return view('content.dashboard.admin.locations.create', compact('pastors'));
+        $this->denyBranch();
+
+        return view('content.dashboard.admin.locations.create', [
+            'pastors' => Pastor::orderBy('name')->get(),
+        ]);
     }
 
     public function store(Request $request)
     {
+        $this->denyBranch();
+
         if ($request->boolean('is_default')) {
             ChurchLocation::query()->update(['is_default' => false]);
         }
 
         $data = $this->validated($request);
-
-        // Generate visit link based on pastor
-        if ($request->filled('pastor_id')) {
-            $pastor = Pastor::find($request->pastor_id);
-            $data['visit_link'] = route('pastor.show', $pastor->slug ?? $pastor->id);
-        }
+        $data['is_default'] = $request->boolean('is_default');
+        $data['visit_link'] = $this->visitLinkFor($request->input('pastor_id'));
 
         ChurchLocation::create($data);
-        return redirect()->route('locations.index')->with('success', 'Location added.');
+
+        return redirect()
+            ->route('admin.locations.index')
+            ->with('success', 'Location added.');
     }
 
     public function edit(ChurchLocation $location)
     {
-        $pastors = Pastor::orderBy('name')->get();
-        return view('locations.edit', compact('location', 'pastors'));
+        $this->authorizeLocation($location);
+
+        return view('content.dashboard.admin.locations.edit', [
+            'location' => $location,
+            'pastors' => $this->pastorsForForm(),
+        ]);
     }
 
     public function update(Request $request, ChurchLocation $location)
     {
+        $this->authorizeLocation($location);
+
         if ($request->boolean('is_default')) {
             ChurchLocation::where('id', '!=', $location->id)->update(['is_default' => false]);
         }
 
         $data = $this->validated($request);
+        $user = Auth::user();
 
-        // Update visit link
-        if ($request->filled('pastor_id')) {
-            $pastor = Pastor::find($request->pastor_id);
-            $data['visit_link'] = route('pastor.show', $pastor->slug ?? $pastor->id);
+        if ($user && $user->isBranch()) {
+            $data['pastor_id'] = $user->assignedPastorId();
+        } else {
+            $data['is_default'] = $request->boolean('is_default');
+            $data['visit_link'] = $this->visitLinkFor($request->input('pastor_id'));
+            if (! $request->filled('pastor_id')) {
+                $data['pastor_id'] = null;
+            }
+        }
+
+        if ($user && $user->isBranch()) {
+            $data['visit_link'] = $this->visitLinkFor((string) $user->assignedPastorId());
+            unset($data['is_default']);
         }
 
         $location->update($data);
-        return redirect()->route('locations.index')->with('success', 'Location updated.');
+
+        return redirect()
+            ->route('admin.locations.index')
+            ->with('success', 'Location updated.');
     }
 
     public function destroy(ChurchLocation $location)
     {
+        $this->denyBranch();
         $location->delete();
+
         return back()->with('success', 'Location removed.');
     }
 
-    private function validated(Request $request)
+    private function validated(Request $request): array
     {
         return $request->validate([
-            'name'          => 'required|string|max:255',
-            'city'          => 'required|string|max:255',
-            'address'       => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
             'map_embed_url' => 'required|string',
-            'maps_link'     => 'nullable|string|max:500',
-            'service_time'  => 'nullable|string|max:255',
-            'is_default'    => 'nullable|boolean',
-            'sort_order'    => 'nullable|integer',
-            'pastor_id'     => 'nullable|exists:pastors,id',
+            'maps_link' => 'nullable|string|max:500',
+            'service_time' => 'nullable|string|max:255',
+            'sort_order' => 'nullable|integer',
+            'pastor_id' => 'nullable|exists:pastors,id',
         ]);
+    }
+
+    private function visitLinkFor(?string $pastorId): ?string
+    {
+        if (! $pastorId) {
+            return null;
+        }
+
+        $pastor = Pastor::find($pastorId);
+
+        return $pastor ? route('pastor.show', $pastor->id) : null;
+    }
+
+    private function scopeLocations($query): void
+    {
+        $user = Auth::user();
+        if ($user && $user->isBranch()) {
+            $query->where('pastor_id', $user->assignedPastorId());
+        }
+    }
+
+    private function authorizeLocation(ChurchLocation $location): void
+    {
+        $user = Auth::user();
+        if ($user && $user->isBranch() && (int) $location->pastor_id !== $user->assignedPastorId()) {
+            abort(403, 'You can only edit your assigned branch location.');
+        }
+    }
+
+    private function denyBranch(): void
+    {
+        $user = Auth::user();
+        if ($user && $user->isBranch()) {
+            abort(403, 'Branch accounts cannot create or delete locations.');
+        }
+    }
+
+    private function pastorsForForm()
+    {
+        $user = Auth::user();
+        $query = Pastor::orderBy('name');
+        if ($user && $user->isBranch()) {
+            $query->where('id', $user->assignedPastorId());
+        }
+
+        return $query->get();
     }
 }

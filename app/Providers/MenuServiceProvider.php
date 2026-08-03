@@ -2,30 +2,28 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\View;
-use Illuminate\Routing\Route;
-
+use App\Support\AdminMenuBuilder;
 use Illuminate\Support\ServiceProvider;
 
 class MenuServiceProvider extends ServiceProvider
 {
-  /**
-   * Register services.
-   */
-  public function register(): void
-  {
-    //
-  }
+    public function register(): void
+    {
+        //
+    }
 
-  /**
-   * Bootstrap services.
-   */
-  public function boot(): void
-  {
-    $verticalMenuJson = file_get_contents(base_path('resources/menu/verticalMenu.json'));
-    $verticalMenuData = json_decode($verticalMenuJson);
+    public function boot(): void
+    {
+        view()->composer('layouts.sections.menu.*', function ($view) {
+            try {
+                $menu = AdminMenuBuilder::toMenuTree();
+                $verticalMenuData = (object) ['menu' => $menu];
+            } catch (\Throwable $e) {
+                $json = file_get_contents(base_path('resources/menu/verticalMenu.json'));
+                $verticalMenuData = json_decode($json) ?: (object) ['menu' => []];
+            }
 
-    // Share all menuData to all the views
-    $this->app->make('view')->share('menuData', [$verticalMenuData]);
-  }
+            $view->with('menuData', [$verticalMenuData]);
+        });
+    }
 }

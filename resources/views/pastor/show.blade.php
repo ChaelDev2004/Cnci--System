@@ -4,13 +4,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ $pastor->name }} - CNCI Church</title>
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>{{ $pastor->church }} - {{ $siteSettings->brandName() }}</title>
+  <link rel="icon" href="{{ $siteSettings->faviconUrl() }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  @include('layouts.partials.public-styles')
   <style>
-    /* ─── RESET & BASE ─── */
+    :root {
+      --text: #2b2b2b;
+      --muted: #5c5c5c;
+      --line: #e6e6e6;
+      --card: #fff;
+      --red: #c41e2a;
+      --blue: #024886;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -18,1010 +26,879 @@
     }
 
     body {
-      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-      background: #f0f2f5;
-      color: #1a1a1a;
-      padding-top: 80px;
-      /* space for fixed nav */
-    }
-
-    /* ─── NAV (from landing page) ─────────────────────────────── */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      width: 100%;
-    }
-
-    .nav-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 32px;
-      max-width: 1600px;
-      margin: 0 auto;
-      gap: 20px;
-      background: linear-gradient(to right, #d1202a, #024886);
-    }
-
-    .nav-logo {
-      height: 40px;
-      width: auto;
-    }
-
-    .nav-brand {
-      font-weight: 600;
-      font-size: 20px;
-      color: #fff;
-      letter-spacing: -0.02em;
-      margin-right: auto;
-    }
-
-    .nav-brand-highlight {
-      color: #f5c542;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 28px;
-      list-style: none;
-    }
-
-    .nav-links a {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 14px;
-      font-weight: 500;
-      transition: 0.2s;
-      text-decoration: none;
-    }
-
-    .nav-links a:hover {
-      color: #fff;
-    }
-
-    .nav-cta {
-      background: #f5c542;
-      color: #1e1e1e;
-      padding: 8px 22px;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 14px;
-      transition: 0.2s;
-      text-decoration: none;
-    }
-
-    .nav-cta:hover {
-      background: #e6b330;
-    }
-
-    .nav-burger {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      padding: 6px;
-    }
-
-    .nav-burger span {
-      width: 26px;
-      height: 2px;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text);
       background: #fff;
-      border-radius: 4px;
-      transition: 0.3s;
+      line-height: 1.6;
     }
 
-    /* mobile menu */
-    .mob-menu {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100vh;
-      background: #0f172a;
-      z-index: 2000;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
+    img {
+      max-width: 100%;
+      display: block;
     }
 
-    .mob-menu.open {
-      display: flex;
+    a {
+      text-decoration: none;
+      color: inherit;
     }
 
-    .mob-menu-brand {
-      font-size: 28px;
-      font-weight: 700;
+    .container {
+      width: min(1100px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative;
+      min-height: 52vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
       color: #fff;
-      margin-bottom: 30px;
-      letter-spacing: -0.02em;
+      overflow: hidden;
+      padding: 80px 20px;
     }
 
-    .mob-menu-close {
+    .hero-bg {
       position: absolute;
-      top: 24px;
-      right: 28px;
-      background: transparent;
-      border: none;
-      width: 36px;
-      height: 36px;
-      cursor: pointer;
-    }
-
-    .mob-menu-close svg {
+      inset: 0;
       width: 100%;
       height: 100%;
-      stroke: #fff;
-      stroke-width: 2;
+      object-fit: cover;
+      transform: scale(1.02);
     }
 
-    .mob-links {
-      list-style: none;
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.72));
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+    }
+
+    .hero-content h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 18px;
+    }
+
+    .hero-content p {
+      font-size: 0.98rem;
+      color: rgba(255, 255, 255, 0.88);
+      max-width: 560px;
+      margin: 0 auto 10px;
+    }
+
+    /* ─── SECTIONS ─── */
+    .section {
+      padding: 72px 0;
+    }
+
+    .section-title {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #222;
+      margin-bottom: 18px;
+    }
+
+    .section-title.center {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 36px;
     }
 
-    .mob-links li {
-      margin: 18px 0;
+    .section-copy {
+      color: var(--muted);
+      font-size: 0.98rem;
+      max-width: 460px;
     }
 
-    .mob-links a {
-      color: #fff;
-      font-size: 22px;
-      font-weight: 400;
-      opacity: 0.8;
-      text-decoration: none;
+    .section-copy p + p {
+      margin-top: 14px;
     }
 
-    .mob-links a:hover {
-      opacity: 1;
+    /* Location */
+    .location-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 48px;
+      align-items: center;
     }
 
-    .mob-menu-footer {
-      color: rgba(255, 255, 255, 0.4);
-      font-size: 14px;
+    .map-frame {
+      border-radius: 18px;
+      overflow: hidden;
+      background: #f3f4f6;
+      min-height: 280px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .map-frame iframe {
+      width: 100%;
+      height: 300px;
+      border: 0;
+      display: block;
+    }
+
+    .map-fallback {
+      min-height: 300px;
+      display: grid;
+      place-items: center;
+      color: #777;
+      padding: 24px;
       text-align: center;
     }
 
-    /* ─── PASTOR DETAIL ─────────────────────────────────────────── */
-    .pastor-detail-page {
-      max-width: 1100px;
-      margin: 40px auto;
-      padding: 0 20px;
+    /* Pastor */
+    .pastor-grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 48px;
+      align-items: center;
     }
 
-    .pastor-detail-card {
-      background: #ffffff;
-      border-radius: 20px;
-      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+    .pastor-photo {
+      border-radius: 18px;
+      overflow: hidden;
+      background: #ececec;
+      aspect-ratio: 4 / 5;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .pastor-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .pastor-photo-placeholder {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      font-size: 4rem;
+      color: #c9c9c9;
+      background: linear-gradient(145deg, #f0f0f0, #e2e2e2);
+    }
+
+    /* Schedule */
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .schedule-card {
+      background: var(--card);
+      border: 1px solid #ececec;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      min-height: 420px;
+    }
+
+    .schedule-card-body {
+      padding: 28px 24px 18px;
+      flex: 1;
+    }
+
+    .schedule-card h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-bottom: 18px;
+      color: #1f1f1f;
+    }
+
+    .schedule-block + .schedule-block {
+      margin-top: 16px;
+    }
+
+    .schedule-block strong {
+      display: block;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .schedule-block span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .schedule-card-media {
+      height: 140px;
+      position: relative;
       overflow: hidden;
     }
 
-    /* ─── BACK BUTTON ─── */
-    .back-button-wrap {
-      padding: 20px 30px 0;
+    .schedule-card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.55);
     }
 
-    .back-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      color: #2d7c3a;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.95rem;
-      transition: all 0.3s;
-      padding: 8px 16px;
-      border-radius: 50px;
-      background: #f0f7f0;
-    }
-
-    .back-button:hover {
-      background: #2d7c3a;
-      color: #fff;
-      transform: translateX(-4px);
-    }
-
-    /* ─── HERO / HEADER ─── */
-    .pastor-hero {
-      background: linear-gradient(145deg, #1a3a2a 0%, #2d5a3a 100%);
-      padding: 40px 50px 30px;
-      color: #fff;
-      position: relative;
-    }
-
-    .pastor-hero::after {
+    .schedule-card-media::after {
       content: '';
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #f5b042, #e8a838, #f5b042);
+      inset: 0;
+      background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.35));
     }
 
-    .pastor-hero-top {
+    .schedule-cta-wrap {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 15px;
+      justify-content: center;
+      margin-top: 34px;
     }
 
-    .pastor-hero-badge {
+    .btn-outline {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.12);
-      padding: 6px 18px;
-      border-radius: 50px;
-      font-size: 0.8rem;
+      justify-content: center;
+      padding: 12px 34px;
+      border: 1.5px solid #333;
+      border-radius: 999px;
       font-weight: 600;
-      letter-spacing: 0.5px;
-      color: #f5b042;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.95rem;
+      transition: 0.2s ease;
+      background: #fff;
     }
 
-    .pastor-hero-badge i {
+    .btn-outline:hover {
+      background: #111;
+      color: #fff;
+    }
+
+    /* Gallery */
+    .gallery-masonry {
+      columns: 3;
+      column-gap: 14px;
+    }
+
+    .gallery-item {
+      break-inside: avoid;
+      margin-bottom: 14px;
+      border: none;
+      padding: 0;
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      background: transparent;
+      display: block;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .gallery-item:hover img,
+    .gallery-item:focus-visible img {
+      transform: scale(1.03);
+    }
+
+    .gallery-item:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    .gallery-empty {
+      text-align: center;
+      color: #777;
+      padding: 48px 20px;
+      border: 1px dashed #ddd;
+      border-radius: 14px;
+    }
+
+    .gallery-placeholders {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      grid-template-rows: 180px 140px 160px;
+      gap: 14px;
+    }
+
+    .ph {
+      border-radius: 10px;
+    }
+
+    .ph-a {
+      grid-row: 1 / 3;
+      background: #1e3a8a;
+    }
+
+    .ph-b {
+      background: #dc2626;
+    }
+
+    .ph-c {
+      background: #7c3aed;
+    }
+
+    .ph-d {
+      background: #b91c1c;
+    }
+
+    .ph-e {
+      background: #312e81;
+    }
+
+    .ph-f {
+      background: #6d28d9;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      background: rgba(10, 15, 20, 0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    .lightbox-inner {
+      position: relative;
+      max-width: min(1100px, 100%);
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-inner img {
+      max-width: 100%;
+      max-height: 85vh;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .lightbox-close,
+    .lightbox-nav {
+      position: absolute;
+      border: none;
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-close {
+      top: 18px;
+      right: 18px;
+      z-index: 2;
+    }
+
+    .lightbox-nav.prev {
+      left: 12px;
+    }
+
+    .lightbox-nav.next {
+      right: 12px;
+    }
+
+    .lightbox-caption {
+      position: absolute;
+      bottom: -36px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.75);
       font-size: 0.9rem;
     }
 
-    .pastor-hero-title {
-      font-size: 2.4rem;
-      font-weight: 800;
-      margin: 12px 0 4px;
-      letter-spacing: -0.5px;
+    /* Footer */
+    .site-footer {
+      margin-top: 40px;
+      background: linear-gradient(90deg, #9b1c24 0%, #5a1f5c 45%, #024886 100%);
+      color: #fff;
+      padding: 48px 0 18px;
     }
 
-    .pastor-hero-sub {
-      font-size: 1.1rem;
-      opacity: 0.85;
-      font-weight: 400;
-    }
-
-    .pastor-hero-sub i {
-      margin-right: 8px;
-      color: #f5b042;
-    }
-
-    /* ─── GRID LAYOUT ─── */
-    .pastor-grid {
+    .footer-grid {
       display: grid;
-      grid-template-columns: 320px 1fr;
+      grid-template-columns: 180px 1fr 1.2fr;
       gap: 40px;
-      padding: 40px 50px;
+      align-items: start;
+      padding-bottom: 28px;
     }
 
-    /* ─── LEFT COLUMN ─── */
-    .pastor-image-wrapper {
-      position: relative;
-    }
-
-    .pastor-image-wrapper img {
-      width: 100%;
-      border-radius: 16px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-      object-fit: cover;
-      aspect-ratio: 1/1;
-    }
-
-    .pastor-image-placeholder {
-      width: 100%;
-      aspect-ratio: 1/1;
-      background: linear-gradient(135deg, #2d7c3a, #1a5a2a);
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: rgba(255, 255, 255, 0.3);
-      font-size: 100px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-    }
-
-    .pastor-role-badge {
-      display: inline-block;
-      margin-top: 16px;
-      padding: 8px 20px;
-      background: #2d7c3a;
-      color: #fff;
-      border-radius: 50px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-align: center;
-      width: 100%;
-    }
-
-    .pastor-role-badge i {
-      margin-right: 8px;
-    }
-
-    /* Social Icons under image */
-    .pastor-social-compact {
-      display: flex;
-      gap: 10px;
-      margin-top: 16px;
-      justify-content: center;
-    }
-
-    .pastor-social-compact a {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 42px;
-      height: 42px;
+    .footer-logo img {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
       border-radius: 50%;
-      color: #fff;
-      font-size: 1rem;
-      transition: all 0.3s;
-      text-decoration: none;
+      background: rgba(255, 255, 255, 0.08);
     }
 
-    .pastor-social-compact a:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .pastor-social-compact .fb {
-      background: #1877f2;
-    }
-
-    .pastor-social-compact .ig {
-      background: #e4405f;
-    }
-
-    .pastor-social-compact .yt {
-      background: #ff0000;
-    }
-
-    .pastor-social-compact .em {
-      background: #555;
-    }
-
-    /* ─── RIGHT COLUMN ─── */
-    .section-block {
-      margin-bottom: 28px;
-    }
-
-    .section-block:last-child {
-      margin-bottom: 0;
-    }
-
-    .section-label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: #2d7c3a;
-      margin-bottom: 8px;
+    .footer-links {
+      list-style: none;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       gap: 10px;
+      padding-top: 18px;
     }
 
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 2px;
-      background: linear-gradient(90deg, #2d7c3a, transparent);
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 0.95rem;
+      transition: opacity 0.2s;
     }
 
-    .section-label i {
-      font-size: 1rem;
+    .footer-links a:hover {
+      opacity: 0.75;
     }
 
-    .section-content {
-      color: #444;
-      line-height: 1.8;
-      font-size: 1rem;
+    .footer-contact h4 {
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+      font-weight: 700;
     }
 
-    .section-content p {
-      margin-bottom: 10px;
+    .footer-contact p {
+      margin-bottom: 14px;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 0.92rem;
     }
 
-    .section-content p:last-child {
-      margin-bottom: 0;
-    }
-
-    /* ─── LOCATION INFO ─── */
-    .location-info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 4px;
-    }
-
-    .location-info-item {
+    .social-row {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: #f8f9fa;
-      border-radius: 12px;
-      transition: all 0.3s;
+      gap: 10px;
+      margin-top: 8px;
     }
 
-    .location-info-item:hover {
-      background: #eef3ee;
-    }
-
-    .location-info-item i {
+    .social-row a {
       width: 36px;
       height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #2d7c3a;
-      color: #fff;
       border-radius: 50%;
-      font-size: 0.85rem;
-      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.95);
+      color: #222;
+      display: grid;
+      place-items: center;
+      font-size: 0.9rem;
+      transition: transform 0.2s;
     }
 
-    .location-info-item .label {
-      font-size: 0.75rem;
-      color: #888;
-      display: block;
-    }
-
-    .location-info-item .value {
-      font-weight: 600;
-      color: #1a1a1a;
-      display: block;
-      font-size: 0.95rem;
-    }
-
-    .location-info-item .value a {
-      color: #2d7c3a;
-      text-decoration: none;
-    }
-
-    .location-info-item .value a:hover {
-      text-decoration: underline;
-    }
-
-    /* ─── SERVICE SCHEDULE TABLE ─── */
-    .schedule-table-wrap {
-      overflow-x: auto;
-      margin-top: 8px;
-      border-radius: 12px;
-      border: 1px solid #e8ece8;
-    }
-
-    .schedule-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.95rem;
-    }
-
-    .schedule-table thead {
-      background: #f0f7f0;
-    }
-
-    .schedule-table th {
-      text-align: left;
-      padding: 12px 18px;
-      font-weight: 700;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #2d7c3a;
-      border-bottom: 2px solid #dce8dc;
-    }
-
-    .schedule-table td {
-      padding: 12px 18px;
-      border-bottom: 1px solid #eef3ee;
-      color: #333;
-    }
-
-    .schedule-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .schedule-table tbody tr:hover {
-      background: #f8fbf8;
-    }
-
-    .schedule-table .service-name {
-      font-weight: 600;
-    }
-
-    .schedule-table .service-time {
-      color: #2d7c3a;
-      font-weight: 600;
-    }
-
-    .schedule-table .service-day {
-      color: #888;
-      font-size: 0.85rem;
-    }
-
-    /* ─── ACTION BUTTONS ─── */
-    .action-buttons {
-      display: flex;
-      gap: 14px;
-      margin-top: 30px;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary-custom {
-      padding: 12px 32px;
-      background: linear-gradient(135deg, #2d7c3a, #1a5a2a);
-      color: #fff;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 600;
-      transition: all 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
-
-    .btn-primary-custom:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(45, 124, 58, 0.35);
-      color: #fff;
-      text-decoration: none;
-    }
-
-    .btn-secondary-custom {
-      padding: 12px 32px;
-      background: transparent;
-      color: #2d7c3a;
-      border: 2px solid #2d7c3a;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 600;
-      transition: all 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.95rem;
-    }
-
-    .btn-secondary-custom:hover {
-      background: #2d7c3a;
-      color: #fff;
-      text-decoration: none;
+    .social-row a:hover {
       transform: translateY(-2px);
     }
 
-    /* ─── RESPONSIVE ─── */
-    @media (max-width: 820px) {
-
-      .nav-links,
-      .nav-cta {
-        display: none;
-      }
-
-      .nav-burger {
-        display: flex;
-      }
-
-      .nav-inner {
-        padding: 14px 20px;
-      }
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+      text-align: center;
+      padding-top: 14px;
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.8);
     }
 
-    @media (max-width: 992px) {
-      .pastor-grid {
-        grid-template-columns: 1fr;
-        gap: 30px;
-        padding: 30px;
-      }
-
-      .pastor-image-wrapper img,
-      .pastor-image-placeholder {
-        max-width: 320px;
-        margin: 0 auto;
-      }
-
-      .pastor-hero-title {
-        font-size: 2rem;
-      }
-    }
-
-    @media (max-width: 768px) {
-      body {
-        padding-top: 70px;
-      }
-
-      .pastor-detail-page {
-        margin: 20px auto;
-        padding: 0 12px;
-      }
-
-      .pastor-grid {
-        padding: 20px;
-      }
-
-      .pastor-hero {
-        padding: 30px 20px 25px;
-      }
-
-      .pastor-hero-title {
-        font-size: 1.6rem;
-      }
-
-      .location-info-grid {
+    /* Responsive */
+    @media (max-width: 900px) {
+      .location-grid,
+      .pastor-grid,
+      .schedule-grid,
+      .footer-grid {
         grid-template-columns: 1fr;
       }
 
-      .action-buttons {
-        flex-direction: column;
+      .gallery-masonry {
+        columns: 2;
       }
 
-      .action-buttons a {
+      .gallery-placeholders {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: none;
+      }
+
+      .ph-a {
+        grid-row: auto;
+        min-height: 180px;
+      }
+
+      .footer-logo {
+        justify-self: center;
+      }
+
+      .footer-links {
+        align-items: center;
+        text-align: center;
+      }
+
+      .footer-contact {
+        text-align: center;
+      }
+
+      .social-row {
         justify-content: center;
       }
 
-      .schedule-table th,
-      .schedule-table td {
-        padding: 10px 14px;
-        font-size: 0.85rem;
-      }
-
-      .back-button-wrap {
-        padding: 16px 20px 0;
+      .pastor-photo {
+        max-width: 420px;
+        margin: 0 auto;
       }
     }
 
-    @media (max-width: 480px) {
-      .pastor-hero-title {
-        font-size: 1.3rem;
+    @media (max-width: 560px) {
+      .section {
+        padding: 52px 0;
       }
 
-      .pastor-hero-sub {
-        font-size: 0.95rem;
+      .gallery-masonry {
+        columns: 1;
       }
 
-      .pastor-grid {
-        padding: 16px;
+      .gallery-placeholders {
+        grid-template-columns: 1fr;
       }
 
-      .schedule-table-wrap {
-        font-size: 0.8rem;
-      }
-
-      .schedule-table th,
-      .schedule-table td {
-        padding: 8px 10px;
+      .schedule-card {
+        min-height: auto;
       }
     }
   </style>
 </head>
 
 <body>
+  @php $activeNav = 'findus'; $fixedNav = false; @endphp
+  @include('layouts.partials.public-nav')
 
-  <!-- ─── NAV (from landing page) ─────────────────────────────── -->
-  <nav>
-    <div class="nav-inner">
-      <img class="nav-logo" src="{{ asset('images/logo.png') }}" alt="CNCI Logo">
-      <a href="{{ url('/') }}" class="nav-brand">CNCI <span class="nav-brand-highlight">Rosales</span></a>
-      <ul class="nav-links">
-        <li><a href="{{ url('/') }}">Home</a></li>
-        <li><a href="{{ url('/') }}#gallery">Gallery</a></li>
-        <li><a href="{{ url('/') }}#events">Events</a></li>
-        <li><a href="{{ url('/') }}#findUs">Find Us</a></li>
-      </ul>
-      <a href="{{ url('/') }}#findUs" class="nav-cta">Plan a Visit</a>
-      <button class="nav-burger" id="burgerBtn1" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </nav>
+  @php
+    $location = $pastor->locations->first();
+    $churchName = $pastor->church ?: ($location->name ?? 'CNCI Church');
+    $locationText = $location
+      ? trim(($location->address ?? '') . ($location->city ? ', ' . $location->city : ''))
+      : 'Visit us this Sunday and experience the presence of God with our church family.';
+    $bioParagraphs = $pastor->bio
+      ? preg_split("/\n\s*\n/", trim($pastor->bio))
+      : [
+          $pastor->name . ' serves as the Resident Pastor of ' . $churchName . ', leading the congregation in worship, discipleship, and community outreach.',
+          'Through preaching the Word and shepherding the flock, the pastor continues to guide families toward a deeper relationship with Christ.',
+        ];
+    $galleryItems = $pastor->galleryImages->map(fn ($img) => [
+      'src' => asset('storage/' . $img->path),
+      'alt' => $img->caption ?: ($churchName . ' gallery'),
+    ])->values();
+    if ($pastor->image) {
+      $galleryItems = $galleryItems->prepend([
+        'src' => asset('storage/' . $pastor->image),
+        'alt' => $pastor->name,
+      ])->values();
+    }
+    $heroImage = asset('assets/img/backgrounds/aboutUs-bg.png');
+    $sundayTime = $location->service_time ?? '9:00 AM – 12:00 PM';
+    $cardImages = [
+      $galleryItems[0]['src'] ?? null,
+      $galleryItems[1]['src'] ?? ($galleryItems[0]['src'] ?? null),
+      $galleryItems[2]['src'] ?? ($galleryItems[0]['src'] ?? null),
+    ];
+  @endphp
 
-  <!-- MOBILE MENU OVERLAY -->
-  <div class="mob-menu" id="mobMenu">
-    <a href="{{ url('/') }}" class="mob-menu-brand">CNCI</a>
-    <button class="mob-menu-close" id="mobClose" aria-label="Close">
-      <svg viewBox="0 0 24 24">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </svg>
-    </button>
-    <ul class="mob-links">
-      <li><a href="{{ url('/') }}">Home</a></li>
-      <li><a href="{{ url('/') }}#gallery">Gallery</a></li>
-      <li><a href="{{ url('/') }}#events">Events</a></li>
-      <li><a href="{{ url('/') }}#findUs">Find Us</a></li>
-    </ul>
-    <div class="mob-menu-footer">
-      <p>Sunday Services</p>
-      @if($pastor->locations->count() > 0)
+  {{-- HERO --}}
+  <header class="hero">
+    <img class="hero-bg" src="{{ $heroImage }}" alt="{{ $churchName }}">
+    <div class="hero-overlay" aria-hidden="true"></div>
+    <div class="hero-content">
+      <h1>{{ $churchName }}</h1>
       <p>
-        @foreach($pastor->locations as $index => $location)
-        @if($location->service_time)
-        <span>{{ preg_replace('/^[A-Za-z]+\s*/', '', $location->service_time) }}</span>
-        @if(!$loop->last) &amp; @endif
-        @endif
-        @endforeach
+        Welcome to {{ $churchName }}. We are a community of faith committed to worship,
+        discipleship, and sharing the love of Christ in our city and beyond.
       </p>
-      @else
-      <p><span>9:00 AM</span> &nbsp;&amp;&nbsp; <span>11:00 AM</span></p>
-      @endif
-      <p style="margin-top:8px;color:rgba(255,255,255,0.22);">
-        <a href="{{ url('/') }}#findUs" style="color:rgba(255,255,255,0.4); text-decoration:none;">Plan a Visit &rarr;</a>
+      <p>
+        Join us this week as we gather for Sunday services, prayer, and youth ministry —
+        everyone is welcome here.
       </p>
     </div>
-  </div>
+  </header>
 
-  <!-- ─── PASTOR DETAIL ─────────────────────────────────────────── -->
-  <div class="pastor-detail-page">
-    <div class="pastor-detail-card">
-
-      <!-- ─── BACK BUTTON ─── -->
-      <div class="back-button-wrap">
-        <a href="{{ url('/') }}#findUs" class="back-button">
-          <i class="fas fa-arrow-left"></i> Back to Locations
-        </a>
-      </div>
-
-      <!-- ─── HERO ─── -->
-      <div class="pastor-hero">
-        <div class="pastor-hero-top">
-          <span class="pastor-hero-badge">
-            <i class="fas fa-cross"></i> CNCI Church
-          </span>
-          <span style="font-size:0.85rem; opacity:0.7;">
-            <i class="fas fa-calendar-alt"></i>
-            @if($pastor->created_at)
-            Since {{ $pastor->created_at->format('Y') }}
+  {{-- LOCATION --}}
+  <section class="section">
+    <div class="container location-grid">
+      <div>
+        <h2 class="section-title">Location</h2>
+        <div class="section-copy">
+          <p>
+            @if($location)
+              Find us at <strong>{{ $location->name }}</strong> —
+              {{ $locationText }}.
+              We would love to welcome you and your family this Sunday.
             @else
-            Since 2005
+              {{ $churchName }} is ready to welcome you. Reach out to our team for directions and visit details.
             @endif
-          </span>
-        </div>
-        <h1 class="pastor-hero-title">{{ $pastor->name }}</h1>
-        <div class="pastor-hero-sub">
-          <i class="fas fa-church"></i> {{ $pastor->church }}
+          </p>
+          @if($location && $location->maps_link)
+          <p style="margin-top:18px;">
+            <a class="btn-outline" href="{{ $location->maps_link }}" target="_blank" rel="noopener">Open in Google Maps</a>
+          </p>
+          @endif
         </div>
       </div>
-
-      <!-- ─── MAIN GRID ─── -->
-      <div class="pastor-grid">
-
-        <!-- ─── LEFT COLUMN ─── -->
-        <div class="pastor-image-wrapper">
-          @if($pastor->image)
-          <img src="{{ asset('storage/' . $pastor->image) }}" alt="{{ $pastor->name }}" loading="lazy">
-          @else
-          <div class="pastor-image-placeholder">
-            <i class="fas fa-user-pastor"></i>
-          </div>
-          @endif
-
-          @if($pastor->role)
-          <div class="pastor-role-badge">
-            <i class="fas fa-user-tie"></i> {{ $pastor->role }}
-          </div>
-          @endif
-
-          <!-- Social Icons Compact -->
-          <div class="pastor-social-compact">
-            @if($pastor->facebook)
-            <a href="{{ $pastor->facebook }}" target="_blank" rel="noopener" class="fb" title="Facebook">
-              <i class="fab fa-facebook-f"></i>
-            </a>
-            @endif
-            @if($pastor->instagram)
-            <a href="{{ $pastor->instagram }}" target="_blank" rel="noopener" class="ig" title="Instagram">
-              <i class="fab fa-instagram"></i>
-            </a>
-            @endif
-            @if($pastor->youtube)
-            <a href="{{ $pastor->youtube }}" target="_blank" rel="noopener" class="yt" title="YouTube">
-              <i class="fab fa-youtube"></i>
-            </a>
-            @endif
-            @if($pastor->email)
-            <a href="mailto:{{ $pastor->email }}" class="em" title="Email">
-              <i class="fas fa-envelope"></i>
-            </a>
-            @endif
-          </div>
-        </div>
-
-        <!-- ─── RIGHT COLUMN ─── -->
-        <div class="pastor-details">
-
-          <!-- ─── RESIDENT PASTOR ─── -->
-          <div class="section-block">
-            <div class="section-label">
-              <i class="fas fa-user-pastor"></i> Resident Pastor
-            </div>
-            <div class="section-content">
-              <p><strong>{{ $pastor->name }}</strong> @if($pastor->role)– {{ $pastor->role }}@endif</p>
-              <p style="color:#666; font-size:0.95rem;">
-                {{ $pastor->church }} • {{ $pastor->locations->count() }} location(s)
-              </p>
+      <div class="map-frame">
+        @if($location && $location->map_embed_url)
+          <iframe
+            src="{{ $location->map_embed_url }}"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen
+            title="{{ $churchName }} map"></iframe>
+        @else
+          <div class="map-fallback">
+            <div>
+              <i class="fas fa-map-location-dot" style="font-size:2rem;margin-bottom:10px;color:#024886;"></i>
+              <p>{{ $locationText }}</p>
             </div>
           </div>
-
-          <!-- ─── BIO ─── -->
-          @if($pastor->bio)
-          <div class="section-block">
-            <div class="section-label">
-              <i class="fas fa-book-open"></i> About
-            </div>
-            <div class="section-content">
-              <p>{{ $pastor->bio }}</p>
-            </div>
-          </div>
-          @endif
-
-          <!-- ─── LOCATION / CONTACT ─── -->
-          <div class="section-block">
-            <div class="section-label">
-              <i class="fas fa-map-pin"></i> Location &amp; Contact
-            </div>
-            <div class="location-info-grid">
-              @if($pastor->email)
-              <div class="location-info-item">
-                <i class="fas fa-envelope"></i>
-                <div>
-                  <span class="label">Email</span>
-                  <span class="value">
-                    <a href="mailto:{{ $pastor->email }}">{{ $pastor->email }}</a>
-                  </span>
-                </div>
-              </div>
-              @endif
-              @if($pastor->phone)
-              <div class="location-info-item">
-                <i class="fas fa-phone"></i>
-                <div>
-                  <span class="label">Phone</span>
-                  <span class="value">
-                    <a href="tel:{{ $pastor->phone }}">{{ $pastor->phone }}</a>
-                  </span>
-                </div>
-              </div>
-              @endif
-              @if($pastor->locations->first())
-              <div class="location-info-item">
-                <i class="fas fa-church"></i>
-                <div>
-                  <span class="label">Church</span>
-                  <span class="value">{{ $pastor->locations->first()->name }}</span>
-                </div>
-              </div>
-              <div class="location-info-item">
-                <i class="fas fa-map-pin"></i>
-                <div>
-                  <span class="label">Address</span>
-                  <span class="value">{{ $pastor->locations->first()->address }}</span>
-                </div>
-              </div>
-              @endif
-            </div>
-          </div>
-
-          <!-- ─── SERVICE SCHEDULE ─── -->
-          @if($pastor->locations->count() > 0)
-          <div class="section-block">
-            <div class="section-label">
-              <i class="fas fa-clock"></i> Service Schedule
-            </div>
-            <div class="schedule-table-wrap">
-              <table class="schedule-table">
-                <thead>
-                  <tr>
-                    <th>Service</th>
-                    <th>Day</th>
-                    <th>Time</th>
-                    <th>Location</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @foreach($pastor->locations as $location)
-                  <tr>
-                    <td class="service-name">
-                      <i class="fas fa-place-of-worship" style="color:#2d7c3a; margin-right:8px;"></i>
-                      {{ $location->name }}
-                    </td>
-                    <td class="service-day">
-                      @php
-                      $day = 'Sunday';
-                      if($location->service_time) {
-                      $day = preg_replace('/\s*\d{1,2}:\d{2}\s*[AP]M.*$/i', '', $location->service_time);
-                      $day = trim($day) ?: 'Sunday';
-                      }
-                      @endphp
-                      {{ $day }}
-                    </td>
-                    <td class="service-time">
-                      @if($location->service_time)
-                      {{ preg_replace('/^[A-Za-z]+\s*/', '', $location->service_time) }}
-                      @else
-                      10:00 AM
-                      @endif
-                    </td>
-                    <td style="color:#666; font-size:0.9rem;">
-                      {{ $location->city }}
-                    </td>
-                  </tr>
-                  @endforeach
-                </tbody>
-              </table>
-            </div>
-          </div>
-          @endif
-
-          <!-- ─── ACTION BUTTONS ─── -->
-          <div class="action-buttons">
-            <a href="{{ url('/') }}#findUs" class="btn-primary-custom">
-              <i class="fas fa-church"></i> Visit Our Church
-            </a>
-            <a href="{{ url('/') }}#findUs" class="btn-secondary-custom">
-              <i class="fas fa-arrow-left"></i> Back to Locations
-            </a>
-          </div>
-
-        </div>
-        <!-- /right column -->
-
+        @endif
       </div>
-      <!-- /grid -->
-
     </div>
-    <!-- /card -->
-  </div>
-  <!-- /page -->
+  </section>
 
-  <!-- ─── MOBILE MENU SCRIPT ───────────────────────────────────── -->
+  {{-- RESIDENT PASTOR --}}
+  <section class="section" style="padding-top:24px;">
+    <div class="container pastor-grid">
+      <div class="pastor-photo">
+        @if($pastor->image)
+          <img src="{{ asset('storage/' . $pastor->image) }}" alt="{{ $pastor->name }}">
+        @else
+          <div class="pastor-photo-placeholder"><i class="fas fa-user"></i></div>
+        @endif
+      </div>
+      <div>
+        <h2 class="section-title">Resident Pastor</h2>
+        <div class="section-copy">
+          <p style="font-weight:700;color:#222;margin-bottom:10px;">
+            {{ $pastor->name }}@if($pastor->role) — {{ $pastor->role }}@endif
+          </p>
+          @foreach($bioParagraphs as $paragraph)
+            <p>{{ $paragraph }}</p>
+          @endforeach
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {{-- SERVICE SCHEDULE --}}
+  <section class="section" style="padding-top:24px;">
+    <div class="container">
+      <h2 class="section-title center">Service Schedule</h2>
+      <div class="schedule-grid">
+
+        <article class="schedule-card">
+          <div class="schedule-card-body">
+            <h3>Sunday Service</h3>
+            <div class="schedule-block">
+              <strong>Morning Session</strong>
+              <span>{{ $sundayTime }}</span>
+              <span>{{ $churchName }}</span>
+            </div>
+            <div class="schedule-block">
+              <strong>Afternoon Session</strong>
+              <span>3:00 PM – 5:00 PM</span>
+              <span>{{ $churchName }}</span>
+            </div>
+          </div>
+          <div class="schedule-card-media">
+            @if($cardImages[0])
+              <img src="{{ $cardImages[0] }}" alt="Sunday service">
+            @else
+              <img src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=800&q=80" alt="Sunday service">
+            @endif
+          </div>
+        </article>
+
+        <article class="schedule-card">
+          <div class="schedule-card-body">
+            <h3>Prayer Meeting</h3>
+            <div class="schedule-block">
+              <strong>Monday &amp; Wednesday</strong>
+              <span>7:00 AM – 9:00 AM</span>
+            </div>
+            <div class="schedule-block">
+              <strong>Tuesday &amp; Thursday</strong>
+              <span>7:00 PM – 9:00 PM</span>
+            </div>
+            <div class="schedule-block">
+              <strong>Saturday</strong>
+              <span>4:00 PM – 6:00 PM</span>
+            </div>
+          </div>
+          <div class="schedule-card-media">
+            @if($cardImages[1])
+              <img src="{{ $cardImages[1] }}" alt="Prayer meeting">
+            @else
+              <img src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&q=80" alt="Prayer meeting">
+            @endif
+          </div>
+        </article>
+
+        <article class="schedule-card">
+          <div class="schedule-card-body">
+            <h3>YOB</h3>
+            <div class="schedule-block">
+              <strong>YOB Glow</strong>
+              <span>Every Friday</span>
+              <span>7:00 PM – 9:00 PM</span>
+            </div>
+            <div class="schedule-block">
+              <strong>YOB Crew</strong>
+              <span>Every Saturday</span>
+              <span>1:00 PM – 3:00 PM</span>
+            </div>
+          </div>
+          <div class="schedule-card-media">
+            @if($cardImages[2])
+              <img src="{{ $cardImages[2] }}" alt="YOB ministry">
+            @else
+              <img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&q=80" alt="YOB ministry">
+            @endif
+          </div>
+        </article>
+
+      </div>
+
+      <div class="schedule-cta-wrap">
+        <a href="{{ url('/') }}#findUs" class="btn-outline">Service Offered.</a>
+      </div>
+    </div>
+  </section>
+
+  {{-- CHURCH GALLERY --}}
+  <section class="section" style="padding-top:20px;padding-bottom:80px;">
+    <div class="container">
+      <h2 class="section-title center">Church Gallery</h2>
+
+      @if($galleryItems->count())
+        <div class="gallery-masonry" id="pastorGalleryGrid">
+          @foreach($galleryItems as $index => $item)
+            <button
+              type="button"
+              class="gallery-item"
+              data-index="{{ $index }}"
+              aria-label="Open gallery image {{ $index + 1 }}">
+              <img src="{{ $item['src'] }}" alt="{{ $item['alt'] }}" loading="lazy">
+            </button>
+          @endforeach
+        </div>
+      @else
+        <div class="gallery-placeholders" aria-hidden="true">
+          <div class="ph ph-a"></div>
+          <div class="ph ph-b"></div>
+          <div class="ph ph-c"></div>
+          <div class="ph ph-d"></div>
+          <div class="ph ph-e"></div>
+          <div class="ph ph-f"></div>
+        </div>
+        <p class="gallery-empty" style="margin-top:18px;border:none;padding:8px;">
+          Upload gallery photos in Admin → Pastors to fill this section.
+        </p>
+      @endif
+    </div>
+  </section>
+
+  @include('layouts.partials.public-footer')
+
+  <div class="lightbox" id="pastorLightbox" role="dialog" aria-modal="true" aria-label="Church gallery" hidden>
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Close gallery">
+      <i class="fas fa-times"></i>
+    </button>
+    <button type="button" class="lightbox-nav prev" id="lightboxPrev" aria-label="Previous photo">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="lightbox-inner">
+      <img src="" alt="" id="lightboxImage">
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+    <button type="button" class="lightbox-nav next" id="lightboxNext" aria-label="Next photo">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+
   <script>
     (function() {
-      const mobMenu = document.getElementById('mobMenu');
-      const mobClose = document.getElementById('mobClose');
-      const burger = document.getElementById('burgerBtn1');
+      const items = @json($galleryItems);
+      if (!items.length) return;
 
-      function openMenu() {
-        mobMenu.classList.add('open');
+      const lightbox = document.getElementById('pastorLightbox');
+      const imageEl = document.getElementById('lightboxImage');
+      const captionEl = document.getElementById('lightboxCaption');
+      let current = 0;
+
+      function render() {
+        const item = items[current];
+        imageEl.src = item.src;
+        imageEl.alt = item.alt;
+        captionEl.textContent = (current + 1) + ' / ' + items.length;
+      }
+
+      function openAt(index) {
+        current = index;
+        render();
+        lightbox.hidden = false;
+        lightbox.classList.add('open');
         document.body.style.overflow = 'hidden';
       }
 
-      function closeMenu() {
-        mobMenu.classList.remove('open');
+      function closeLightbox() {
+        lightbox.classList.remove('open');
+        lightbox.hidden = true;
         document.body.style.overflow = '';
       }
 
-      if (burger) {
-        burger.addEventListener('click', function(e) {
-          e.stopPropagation();
-          mobMenu.classList.contains('open') ? closeMenu() : openMenu();
+      document.querySelectorAll('.gallery-item').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          openAt(Number(btn.dataset.index));
         });
-      }
-
-      if (mobClose) {
-        mobClose.addEventListener('click', closeMenu);
-      }
-
-      if (mobMenu) {
-        mobMenu.addEventListener('click', function(e) {
-          if (e.target === mobMenu) closeMenu();
-        });
-      }
-
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeMenu();
       });
 
-      // Close menu when a link is clicked
-      document.querySelectorAll('.mob-links a').forEach(function(link) {
-        link.addEventListener('click', closeMenu);
+      document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+      document.getElementById('lightboxPrev').addEventListener('click', function() {
+        current = (current - 1 + items.length) % items.length;
+        render();
+      });
+      document.getElementById('lightboxNext').addEventListener('click', function() {
+        current = (current + 1) % items.length;
+        render();
+      });
+
+      lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox) closeLightbox();
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (!lightbox.classList.contains('open')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') {
+          current = (current - 1 + items.length) % items.length;
+          render();
+        }
+        if (e.key === 'ArrowRight') {
+          current = (current + 1) % items.length;
+          render();
+        }
       });
     })();
   </script>
+  @include('layouts.partials.public-scripts')
 
 </body>
 

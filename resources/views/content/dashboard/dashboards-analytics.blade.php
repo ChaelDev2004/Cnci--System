@@ -48,6 +48,60 @@ $stats['total_ministers'],
 $stats['total_staff'],
 ],
 ];
+
+// Welcome page visit analytics
+$visitStats = [
+    'total' => 0,
+    'today' => 0,
+    'week' => 0,
+    'unread' => 0,
+];
+$dailyVisits = collect(range(6, 0))->map(fn () => 0)->values();
+$dailyVisitLabels = collect(range(6, 0))->map(fn ($i) => now()->subDays($i)->format('D'))->values();
+$recentVisits = collect();
+
+try {
+    if (\App\Models\PageVisit::tableReady()) {
+        $visitStats['total'] = \App\Models\PageVisit::where('page', 'welcome')->count();
+        $visitStats['today'] = \App\Models\PageVisit::where('page', 'welcome')->whereDate('created_at', today())->count();
+        $visitStats['week'] = \App\Models\PageVisit::where('page', 'welcome')->where('created_at', '>=', now()->subDays(7))->count();
+        $visitStats['unread'] = \App\Models\PageVisit::where('is_read', false)->count();
+
+        $visitsByDay = \App\Models\PageVisit::where('page', 'welcome')
+            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+            ->selectRaw('DATE(created_at) as day, COUNT(*) as total')
+            ->groupBy('day')
+            ->pluck('total', 'day');
+
+        $dailyVisits = collect(range(6, 0))->map(function ($i) use ($visitsByDay) {
+            $day = now()->subDays($i)->toDateString();
+            return (int) ($visitsByDay[$day] ?? 0);
+        })->values();
+
+        $dailyVisitLabels = collect(range(6, 0))->map(fn ($i) => now()->subDays($i)->format('D'))->values();
+        $recentVisits = \App\Models\PageVisit::where('page', 'welcome')->orderByDesc('created_at')->take(6)->get();
+
+        // Opening dashboard marks visit notifications as read
+        \App\Models\PageVisit::where('is_read', false)->update(['is_read' => true]);
+    }
+} catch (\Throwable $e) {
+    // table may not exist yet
+}
+
+$contactStats = [
+    'total' => 0,
+    'unread' => 0,
+];
+$recentContactMessages = collect();
+try {
+    if (\App\Models\ContactMessage::tableReady()) {
+        $contactStats['total'] = \App\Models\ContactMessage::count();
+        $contactStats['unread'] = \App\Models\ContactMessage::where('is_read', false)->count();
+        $recentContactMessages = \App\Models\ContactMessage::orderByDesc('created_at')->take(5)->get();
+    }
+} catch (\Throwable $e) {
+    // table may not exist yet
+}
 @endphp
 
 @extends('layouts/contentNavbarLayout')
@@ -67,25 +121,95 @@ $stats['total_staff'],
 @endsection
 
 @section('content')
+<style>
+  .view-page-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid rgba(67, 89, 113, 0.12);
+    border-radius: 14px;
+    padding: 1.15rem 1rem;
+    height: 100%;
+    background: linear-gradient(180deg, #fff 0%, #f8f9fc 100%);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .view-page-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(67, 89, 113, 0.12);
+    border-color: rgba(105, 108, 255, 0.35);
+    color: inherit;
+  }
+  .view-page-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 0.85rem;
+    font-size: 1.25rem;
+  }
+  .view-page-card h6 {
+    margin: 0 0 0.25rem;
+    font-weight: 700;
+  }
+  .view-page-card p {
+    margin: 0;
+    color: #697a8d;
+    font-size: 0.85rem;
+  }
+  .view-page-card .open-label {
+    margin-top: 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #696cff;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .welcome-hero-card {
+    border: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #696cff 0%, #8592ff 45%, #03c3ec 120%);
+    color: #fff;
+  }
+  .welcome-hero-card .card-title,
+  .welcome-hero-card p {
+    color: #fff;
+  }
+  .welcome-hero-card p {
+    opacity: 0.9;
+  }
+  .welcome-hero-card .btn-light {
+    font-weight: 600;
+  }
+  .welcome-hero-card .btn-outline-light {
+    font-weight: 600;
+  }
+</style>
+
 <div class="row">
     <div class="col-xxl-8 mb-6 order-0">
-        <div class="card">
+        <div class="card welcome-hero-card">
             <div class="d-flex align-items-start row">
                 <div class="col-sm-7">
                     <div class="card-body">
-                        <h5 class="card-title text-primary mb-3">
-                            <span id="greeting"></span>, Pastor {{ Auth::user()->name }}! 🤲
+                        <div class="mb-2">
+                            <span class="badge bg-white text-primary">Admin Dashboard</span>
+                        </div>
+                        <h5 class="card-title mb-3">
+                            <span id="greeting"></span>, {{ Auth::user()->name }}
                         </h5>
                         <p class="mb-6">
                             You have {{ $stats['total_events'] }} events on record,
                             {{ $stats['active_events'] }} currently active.
                         </p>
-                        <a href="{{ route('admin.events.index') }}" class="btn btn-sm btn-outline-primary">Manage Events</a>
+                        <a href="{{ route('admin.events.index') }}" class="btn btn-sm btn-light">Manage Events</a>
+                        <a href="{{ url('/') }}" class="btn btn-sm btn-outline-light ms-1" target="_blank" rel="noopener">View Website</a>
                     </div>
                 </div>
                 <div class="col-sm-5 text-center text-sm-left">
                     <div class="card-body pb-0 px-0 px-md-6">
-                        <img src="{{ asset('assets/img/backgrounds/pastorImg.png') }}" height="175" alt="View Badge User" />
+                        <img src="{{ asset('assets/img/backgrounds/pastorImg.png') }}" height="175" alt="Dashboard" style="filter: drop-shadow(0 12px 24px rgba(0,0,0,.2));" />
                     </div>
                 </div>
             </div>
@@ -124,6 +248,132 @@ $stats['total_staff'],
                         <small class="text-success fw-medium">
                             <i class="icon-base bx bx-up-arrow-alt"></i> {{ $stats['upcoming_events'] }} upcoming
                         </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome page visits -->
+    <div class="col-12 order-1 mb-6">
+        <div class="row g-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100 border-0 shadow-none" style="background:linear-gradient(135deg,#fff5f5 0%,#fff 70%);border:1px solid rgba(255,62,29,.12)!important;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="avatar">
+                                <span class="avatar-initial rounded bg-label-danger"><i class="bx bx-envelope"></i></span>
+                            </div>
+                            @if($contactStats['unread'] > 0)
+                                <span class="badge bg-danger">{{ $contactStats['unread'] }} new</span>
+                            @endif
+                        </div>
+                        <p class="mb-1">Contact Messages</p>
+                        <h4 class="mb-1">{{ $contactStats['total'] }}</h4>
+                        <small class="text-muted d-block mb-3">Form submissions from the website</small>
+                        <a href="{{ route('admin.contact.index') }}" class="btn btn-sm btn-danger">
+                            {{ $contactStats['unread'] > 0 ? 'View new messages' : 'Open inbox' }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card h-100">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Latest Contacts</h6>
+                        <a href="{{ route('admin.contact.index') }}" class="small">All</a>
+                    </div>
+                    <div class="card-body pt-3">
+                        <ul class="list-unstyled mb-0">
+                            @forelse($recentContactMessages as $msg)
+                                <li class="mb-2">
+                                    <a href="{{ route('admin.contact.show', $msg) }}" class="d-flex justify-content-between align-items-start text-body text-decoration-none">
+                                        <span class="text-truncate pe-2" style="max-width:70%;">
+                                            @unless($msg->is_read)
+                                                <span class="badge bg-label-danger me-1">New</span>
+                                            @endunless
+                                            {{ $msg->name }}
+                                        </span>
+                                        <small class="text-muted flex-shrink-0">{{ $msg->created_at->diffForHumans() }}</small>
+                                    </a>
+                                </li>
+                            @empty
+                                <li class="text-muted">No contact messages yet.</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3 col-xl-2">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="avatar">
+                                <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-show"></i></span>
+                            </div>
+                            @if($visitStats['unread'] > 0)
+                                <span class="badge bg-label-danger">{{ $visitStats['unread'] }} new</span>
+                            @endif
+                        </div>
+                        <p class="mb-1">Welcome Views</p>
+                        <h4 class="mb-0">{{ $visitStats['total'] }}</h4>
+                        <small class="text-muted">All-time visitors</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3 col-xl-2">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="avatar mb-3">
+                            <span class="avatar-initial rounded bg-label-success"><i class="bx bx-calendar"></i></span>
+                        </div>
+                        <p class="mb-1">Today</p>
+                        <h4 class="mb-0">{{ $visitStats['today'] }}</h4>
+                        <small class="text-muted">Welcome page visits</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3 col-xl-2">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="avatar mb-3">
+                            <span class="avatar-initial rounded bg-label-info"><i class="bx bx-bar-chart-alt-2"></i></span>
+                        </div>
+                        <p class="mb-1">Last 7 Days</p>
+                        <h4 class="mb-0">{{ $visitStats['week'] }}</h4>
+                        <small class="text-muted">Weekly visitors</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="card h-100">
+                    <div class="card-header pb-0">
+                        <h6 class="mb-0">Recent Visitors</h6>
+                    </div>
+                    <div class="card-body pt-3">
+                        <ul class="list-unstyled mb-0">
+                            @forelse($recentVisits as $visit)
+                                <li class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-truncate" style="max-width:60%;">{{ $visit->ip_address ?: 'Unknown IP' }}</span>
+                                    <small class="text-muted">{{ $visit->created_at->diffForHumans() }}</small>
+                                </li>
+                            @empty
+                                <li class="text-muted">No visits yet. Open the home page in a private window to test.</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="card-title mb-1">Welcome Page Visits</h5>
+                            <p class="card-subtitle mb-0">Visitor activity over the last 7 days</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="welcomeVisitsChart"></div>
                     </div>
                 </div>
             </div>
@@ -315,6 +565,65 @@ $stats['total_staff'],
         </div>
     </div>
 
+    <!-- View Pages -->
+    <div class="col-12 order-1 mb-6">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div>
+                    <h5 class="card-title mb-1">View Pages</h5>
+                    <p class="card-subtitle mb-0">Preview public pages while signed in as admin</p>
+                </div>
+                <a href="{{ url('/') }}" target="_blank" rel="noopener" class="btn btn-sm btn-primary">
+                    <i class="bx bx-link-external me-1"></i> Open Home
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6 col-xl-3">
+                        <a href="{{ url('/') }}" target="_blank" rel="noopener" class="view-page-card">
+                            <div class="view-page-icon bg-label-primary text-primary"><i class="bx bx-home"></i></div>
+                            <h6>Home / Welcome</h6>
+                            <p>Landing page, hero slides, and contact form</p>
+                            <span class="open-label">Open page <i class="bx bx-right-arrow-alt"></i></span>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <a href="{{ route('about') }}" target="_blank" rel="noopener" class="view-page-card">
+                            <div class="view-page-icon bg-label-info text-info"><i class="bx bx-book-open"></i></div>
+                            <h6>About</h6>
+                            <p>Story, pastors, leaders, and ministry teams</p>
+                            <span class="open-label">Open page <i class="bx bx-right-arrow-alt"></i></span>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <a href="{{ route('content.dashboard.events') }}" target="_blank" rel="noopener" class="view-page-card">
+                            <div class="view-page-icon bg-label-warning text-warning"><i class="bx bx-calendar-event"></i></div>
+                            <h6>Events</h6>
+                            <p>Public event listings and schedules</p>
+                            <span class="open-label">Open page <i class="bx bx-right-arrow-alt"></i></span>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-xl-4 col-xxl-2">
+                        <a href="{{ route('gallery') }}" target="_blank" rel="noopener" class="view-page-card">
+                            <div class="view-page-icon bg-label-secondary text-secondary"><i class="bx bx-images"></i></div>
+                            <h6>Gallery</h6>
+                            <p>Church and pastor photo gallery</p>
+                            <span class="open-label">Open page <i class="bx bx-right-arrow-alt"></i></span>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <a href="{{ route('findus') }}" target="_blank" rel="noopener" class="view-page-card">
+                            <div class="view-page-icon bg-label-success text-success"><i class="bx bx-map-alt"></i></div>
+                            <h6>Find Us</h6>
+                            <p>Locations, maps, and meet our pastor</p>
+                            <span class="open-label">Open page <i class="bx bx-right-arrow-alt"></i></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Events -->
     <div class="col-md-6 col-lg-4 order-2 mb-6">
         <div class="card h-100">
@@ -358,8 +667,8 @@ $stats['total_staff'],
         <div class="card h-100">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <h5 class="card-title m-0 me-2">Church Locations</h5>
-                @if (\Illuminate\Support\Facades\Route::has('locations.index'))
-                <a href="{{ route('locations.index') }}" class="btn btn-sm btn-icon">
+                @if (\Illuminate\Support\Facades\Route::has('admin.locations.index'))
+                <a href="{{ route('admin.locations.index') }}" class="btn btn-sm btn-icon">
                     <i class="icon-base bx bx-dots-vertical-rounded icon-lg"></i>
                 </a>
                 @endif
@@ -537,6 +846,67 @@ $stats['total_staff'],
                 }
             });
             lineChart.render();
+        }
+
+        // ---- Welcome visits (last 7 days) ----
+        const welcomeVisitsEl = document.querySelector('#welcomeVisitsChart');
+        if (welcomeVisitsEl && typeof ApexCharts !== 'undefined') {
+            const dailyVisits = @json($dailyVisits);
+            const dailyVisitLabels = @json($dailyVisitLabels);
+
+            const visitsChart = new ApexCharts(welcomeVisitsEl, {
+                chart: {
+                    type: 'area',
+                    height: 280,
+                    parentHeightOffset: 0,
+                    toolbar: { show: false },
+                    fontFamily: fontFamily
+                },
+                series: [{
+                    name: 'Visitors',
+                    data: dailyVisits
+                }],
+                colors: [infoColor],
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.4,
+                        opacityTo: 0.05,
+                        stops: [0, 90, 100]
+                    }
+                },
+                dataLabels: { enabled: false },
+                grid: {
+                    borderColor: borderColor,
+                    strokeDashArray: 6
+                },
+                xaxis: {
+                    categories: dailyVisitLabels,
+                    labels: {
+                        style: { colors: bodyColor, fontSize: '13px' }
+                    },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false }
+                },
+                yaxis: {
+                    min: 0,
+                    labels: {
+                        style: { colors: bodyColor, fontSize: '13px' },
+                        formatter: (val) => Math.round(val)
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: (val) => val + ' visit' + (val === 1 ? '' : 's')
+                    }
+                }
+            });
+            visitsChart.render();
         }
 
         // ---- Team Distribution Donut Chart ----

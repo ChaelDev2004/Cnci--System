@@ -4,100 +4,180 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pastor;
+use App\Models\PastorImage;
+use App\Models\HomeSettings;
 use Illuminate\Http\Request;
-use App\Models\ChurchLocation;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PastorController extends Controller
 {
-  public function index()
-  {
-    return view('content.dashboard.pastors.index', [
-      'pastors' => Pastor::orderBy('sort_order')->get(),
-    ]);
-  }
+    public function index()
+    {
+        $query = Pastor::orderBy('sort_order');
+        $user = Auth::user();
+        if ($user && $user->isBranch()) {
+            $query->where('id', $user->assignedPastorId());
+        }
 
-  public function create()
-  {
-    return view('content.dashboard.pastors.create');
-  }
-
-  public function store(Request $request)
-  {
-    if ($request->boolean('is_default')) {
-      ChurchLocation::query()->update(['is_default' => false]);
+        return view('content.dashboard.pastors.index', [
+            'pastors' => $query->get(),
+        ]);
     }
 
-    $data = $this->validated($request);
+    public function create()
+    {
+        $this->denyBranch();
 
-    // Generate visit link if pastor is selected
-    if ($request->filled('pastor_id')) {
-      $pastor = Pastor::find($request->pastor_id);
-      if ($pastor && $pastor->slug) {
-        $data['visit_link'] = route('pastor.show', $pastor->slug);
-      }
+        return view('content.dashboard.pastors.create');
     }
 
-    ChurchLocation::create($data);
-    return redirect()->route('locations.index')->with('success', 'Location added.');
-  }
+    public function store(Request $request)
+    {
+        $this->denyBranch();
+        $data = $this->validated($request);
 
-  public function edit(Pastor $pastor)
-  {
-    return view('content.dashboard.pastors.edit', compact('pastor'));
-  }
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('pastors', 'public');
+        }
 
-  public function update(Request $request, ChurchLocation $location)
-  {
-    if ($request->boolean('is_default')) {
-      ChurchLocation::where('id', '!=', $location->id)->update(['is_default' => false]);
+        $pastor = Pastor::create($data);
+        $this->storeGalleryImages($request, $pastor);
+
+        return redirect()
+            ->route('admin.pastors.index')
+            ->with('success', 'Pastor added.');
     }
 
-    $data = $this->validated($request);
+    public function edit(Pastor $pastor)
+    {
+        $this->authorizePastor($pastor);
+        $pastor->load('galleryImages');
 
-    // Update visit link if pastor is selected
-    if ($request->filled('pastor_id')) {
-      $pastor = Pastor::find($request->pastor_id);
-      if ($pastor && $pastor->slug) {
-        $data['visit_link'] = route('pastor.show', $pastor->slug);
-      }
-    } else {
-      $data['visit_link'] = null;
+        return view('content.dashboard.pastors.edit', compact('pastor'));
     }
 
-    $location->update($data);
-    return redirect()->route('locations.index')->with('success', 'Location updated.');
-  }
+    public function update(Request $request, Pastor $pastor)
+    {
+        $this->authorizePastor($pastor);
+        $data = $this->validated($request);
 
-  public function destroy(Pastor $pastor)
-  {
-    $pastor->delete();
+        if ($request->hasFile('image')) {
+            if ($pastor->image) {
+                Storage::disk('public')->delete($pastor->image);
+            }
+            $data['image'] = $request->file('image')->store('pastors', 'public');
+        }
 
-    return back()->with('success', 'Pastor removed.');
-  }
+        $pastor->update($data);
+        $this->deleteSelectedGalleryImages($request);
+        $this->storeGalleryImages($request, $pastor);
 
-  private function validated(Request $request)
-  {
-    return $request->validate([
-      'name' => 'required|string|max:255',
-      'role' => 'nullable|string|max:255',
-      'church' => 'required|string|max:255',
-      'sort_order' => 'nullable|integer',
-      'image' => 'nullable|image|max:4096',
-      'bio' => 'nullable|string',
-      'email' => 'nullable|email|max:255',
-      'phone' => 'nullable|string|max:255',
-      'facebook' => 'nullable|string|max:255',
-      'instagram' => 'nullable|string|max:255',
-      'youtube' => 'nullable|string|max:255',
-    ]);
-  }
-  // Add this method for public viewing
-  public function show($id)
-  {
-    $pastor = Pastor::findOrFail($id);
-    return view('pastor.show', compact('pastor'));
-  }
+        return redirect()
+            ->route('admin.pastors.index')
+            ->with('success', 'Pastor updated.');
+    }
 
-  // Update the validated method to include new fields
+    public function destroy(Pastor $pastor)
+    {
+        $this->denyBranch();
+        $this->authorizePastor($pastor);
 
+        foreach ($pastor->galleryImages as $image) {
+            Storage::disk('public')->delete($image->path);
+        }
+
+        if ($pastor->image) {
+            Storage::disk('public')->delete($pastor->image);
+        }
+
+        $pastor->delete();
+
+        return redirect()
+            ->route('admin.pastors.index')
+            ->with('success', 'Pastor deleted.');
+    }
+
+    private function denyBranch(): void
+    {
+        $user = Auth::user();
+        if ($user && $user->isBranch()) {
+            abort(403, 'Branch accounts cannot create or delete pastors.');
+        }
+    }
+
+    private function authorizePastor(Pastor $pastor): void
+    {
+        $user = Auth::user();
+        if ($user && ! $user->canManagePastor((int) $pastor->id)) {
+            abort(403, 'You can only edit your assigned pastor.');
+        }
+    }
+
+    public function show($id)
+    {
+        $pastor = Pastor::with(['locations', 'galleryImages'])->findOrFail($id);
+        $settings = HomeSettings::first() ?? new HomeSettings();
+
+        return view('pastor.show', compact('pastor', 'settings'));
+    }
+
+    private function validated(Request $request): array
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'role' => 'nullable|string|max:255',
+            'church' => 'required|string|max:255',
+            'sort_order' => 'nullable|integer',
+            'image' => 'nullable|image|max:4096',
+            'bio' => 'nullable|string',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:255',
+            'facebook' => 'nullable|string|max:255',
+            'instagram' => 'nullable|string|max:255',
+            'youtube' => 'nullable|string|max:255',
+            'gallery_images' => 'nullable|array',
+            'gallery_images.*' => 'image|max:4096',
+            'delete_gallery' => 'nullable|array',
+            'delete_gallery.*' => 'integer|exists:pastor_images,id',
+        ]);
+
+        unset($data['gallery_images'], $data['delete_gallery'], $data['image']);
+
+        return $data;
+    }
+
+    private function storeGalleryImages(Request $request, Pastor $pastor): void
+    {
+        if (!$request->hasFile('gallery_images')) {
+            return;
+        }
+
+        $sortOrder = (int) $pastor->galleryImages()->max('sort_order');
+
+        foreach ($request->file('gallery_images') as $file) {
+            $sortOrder++;
+            PastorImage::create([
+                'pastor_id' => $pastor->id,
+                'path' => $file->store('pastors/gallery', 'public'),
+                'sort_order' => $sortOrder,
+            ]);
+        }
+    }
+
+    private function deleteSelectedGalleryImages(Request $request): void
+    {
+        $ids = $request->input('delete_gallery', []);
+
+        if (empty($ids)) {
+            return;
+        }
+
+        $images = PastorImage::whereIn('id', $ids)->get();
+
+        foreach ($images as $image) {
+            Storage::disk('public')->delete($image->path);
+            $image->delete();
+        }
+    }
 }
