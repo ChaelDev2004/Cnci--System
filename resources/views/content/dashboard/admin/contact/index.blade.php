@@ -3,7 +3,7 @@
 
 @section('content')
 @if(session('success'))
-  <div class="alert alert-success mb-3">{{ session('success') }}</div>
+  <div class="alert alert-success mb-3" style="display:none">{{ session('success') }}</div>
 @endif
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -44,7 +44,9 @@
         <input type="text" name="contact_website" value="{{ old('contact_website', $settings->contact_website) }}" placeholder="church.org">
       </div>
 
-      <button class="btn" type="submit">Save Contact Info</button>
+      <div class="cnci-form-actions">
+        <button class="btn btn-primary" type="submit">Save Contact Info</button>
+      </div>
     </form>
   </div>
 </div>

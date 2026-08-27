@@ -460,13 +460,13 @@
             <p class="subtitle">Access your dashboard to manage your church branch.</p>
 
             @if(session('error'))
-              <div class="alert alert-danger">{{ session('error') }}</div>
+              <div class="alert alert-danger" style="display:none">{{ session('error') }}</div>
             @endif
             @error('email')
-              <div class="alert alert-danger">{{ $message }}</div>
+              <div class="alert alert-danger" style="display:none">{{ $message }}</div>
             @enderror
             @error('password')
-              <div class="alert alert-danger">{{ $message }}</div>
+              <div class="alert alert-danger" style="display:none">{{ $message }}</div>
             @enderror
 
             <div class="input-field">
@@ -534,6 +534,7 @@
     </div>
   </div>
 
+  @include('layouts.partials.cnci-ui')
   <script>
     const shell = document.getElementById('authShell');
     document.getElementById('signUpBtn').addEventListener('click', () => {

@@ -3,7 +3,7 @@
 
 @section('content')
 @if(session('success'))
-  <div class="alert alert-success mb-3">{{ session('success') }}</div>
+  <div class="alert alert-success mb-3" style="display:none">{{ session('success') }}</div>
 @endif
 
 <a href="{{ route('admin.gallery.create') }}" class="btn">+ Add Gallery Image</a>

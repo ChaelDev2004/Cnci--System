@@ -99,11 +99,11 @@
   </div>
   </div>
 
-  <div class="mt-3">
+  <div class="cnci-form-actions">
     <button type="submit" class="btn btn-primary" id="submitBtn">
-      <i class="fas fa-save"></i> Update Event
+      Update Event
     </button>
-    <a href="{{ route('admin.events.index') }}" class="btn btn-secondary">Cancel</a>
+    <a href="{{ route('admin.events.index') }}" class="btn btn-outline-secondary">Cancel</a>
   </div>
   </form>
   </div>
@@ -111,7 +111,6 @@
   </div>
 
   @push('scripts')
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     // Image preview
     document.getElementById('image_file').addEventListener('change', function(e) {
@@ -136,51 +135,6 @@
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...';
-    });
-
-    // Flash messages
-    document.addEventListener('DOMContentLoaded', function() {
-      @if(session('success'))
-      Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: '{{ session("success") }}',
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: true,
-        confirmButtonColor: '#28a745',
-        confirmButtonText: 'OK',
-        willClose: () => {
-          window.location.href = '{{ route("admin.events.index") }}';
-        }
-      });
-      @endif
-
-      @if(session('error'))
-      Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: '{{ session("error") }}',
-        confirmButtonColor: '#dc3545',
-        confirmButtonText: 'OK'
-      });
-      @endif
-
-      @if($errors - > any())
-      Swal.fire({
-        icon: 'warning',
-        title: 'Validation Error!',
-        html: `
-                    <ul style="text-align: left;">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                `,
-        confirmButtonColor: '#ffc107',
-        confirmButtonText: 'Got it!',
-      });
-      @endif
     });
   </script>
   @endpush

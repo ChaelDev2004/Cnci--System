@@ -8,7 +8,7 @@
 </div>
 
 @if($errors->any())
-  <div class="alert alert-danger">
+  <div class="alert alert-danger" style="display:none">
     <ul class="mb-0">
       @foreach($errors->all() as $error)
         <li>{{ $error }}</li>
@@ -58,7 +58,7 @@
           </div>
         </div>
       </div>
-      <div class="mt-4 d-flex gap-2">
+      <div class="cnci-form-actions">
         <button type="submit" class="btn btn-primary">Create &amp; Send</button>
         <a href="{{ route('admin.branches.index') }}" class="btn btn-outline-secondary">Cancel</a>
       </div>

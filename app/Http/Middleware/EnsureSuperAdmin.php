@@ -13,7 +13,13 @@ class EnsureSuperAdmin
         $user = $request->user();
 
         if (! $user || ! $user->isSuperAdmin()) {
-            abort(403, 'Only headquarters admins can access this area.');
+            if ($request->expectsJson()) {
+                abort(403, 'Only headquarters admins can access this area.');
+            }
+
+            return redirect()
+                ->route('admin.dashboard')
+                ->with('denied', 'Only headquarters admins can access this area.');
         }
 
         return $next($request);

@@ -27,6 +27,16 @@
     <!-- Favicon -->
     <link rel="icon" href="{{ $siteSettings->faviconUrl() }}" />
 
+    {{-- Apply saved admin theme before paint to avoid flash --}}
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('cnci-admin-theme') || 'light';
+          document.documentElement.setAttribute('data-bs-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Include Styles -->
     @include('layouts/sections/styles')
 
@@ -43,6 +53,7 @@
 
     <!-- Include Scripts -->
     @include('layouts/sections/scripts')
+    @include('layouts.partials.cnci-ui')
 </body>
 
 </html>

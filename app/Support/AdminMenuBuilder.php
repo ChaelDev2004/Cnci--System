@@ -12,14 +12,14 @@ class AdminMenuBuilder
     public static function defaultItems(): array
     {
         return [
-            ['type' => 'link', 'name' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'menu-icon icon-base bx bx-home-smile', 'slug' => 'admin.dashboard', 'sort_order' => 1],
+            ['type' => 'link', 'name' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'menu-icon icon-base bx bx-home', 'slug' => 'admin.dashboard', 'sort_order' => 1],
             ['type' => 'header', 'name' => 'CMS', 'sort_order' => 2],
-            ['type' => 'link', 'name' => 'Home', 'url' => '/Home-page-index', 'icon' => 'menu-icon icon-base bx bx-home-alt', 'slug' => 'content.dashboard.admin.index', 'sort_order' => 3],
-            ['type' => 'link', 'name' => 'About', 'url' => '/admin/about-page', 'icon' => 'menu-icon icon-base bx bx-chat', 'slug' => 'admin.about.edit', 'sort_order' => 4],
+            ['type' => 'link', 'name' => 'Home', 'url' => '/Home-page-index', 'icon' => 'menu-icon icon-base bx bx-layout', 'slug' => 'content.dashboard.admin.index', 'sort_order' => 3],
+            ['type' => 'link', 'name' => 'About', 'url' => '/admin/about-page', 'icon' => 'menu-icon icon-base bx bx-info-circle', 'slug' => 'admin.about.edit', 'sort_order' => 4],
             ['type' => 'link', 'name' => 'Pastors', 'url' => '/admin/pastors', 'icon' => 'menu-icon icon-base bx bx-user', 'slug' => 'admin.pastors.index', 'sort_order' => 5],
             ['type' => 'link', 'name' => 'Gallery', 'url' => '/admin/gallery', 'icon' => 'menu-icon icon-base bx bx-images', 'slug' => 'admin.gallery.index', 'sort_order' => 6],
             ['type' => 'link', 'name' => 'Calendar', 'url' => '/admin/calendar', 'icon' => 'menu-icon icon-base bx bx-calendar', 'slug' => 'admin.calendar.index', 'sort_order' => 7],
-            ['type' => 'link', 'name' => 'Events', 'url' => '/admin/Events-page', 'icon' => 'menu-icon icon-base bx bx-grid', 'slug' => 'admin.events.index', 'sort_order' => 8],
+            ['type' => 'link', 'name' => 'Events', 'url' => '/admin/Events-page', 'icon' => 'menu-icon icon-base bx bx-calendar-event', 'slug' => 'admin.events.index', 'sort_order' => 8],
             ['type' => 'header', 'name' => 'Pages', 'sort_order' => 9],
             ['type' => 'link', 'name' => 'Find Us', 'url' => '/admin/locations', 'icon' => 'menu-icon icon-base bx bx-map', 'slug' => 'admin.locations.index', 'sort_order' => 10],
             ['type' => 'link', 'name' => 'Contact', 'url' => '/admin/contact', 'icon' => 'menu-icon icon-base bx bx-envelope', 'slug' => 'admin.contact.index', 'sort_order' => 11],
@@ -27,7 +27,7 @@ class AdminMenuBuilder
             ['type' => 'link', 'name' => 'Branch Accounts', 'url' => '/admin/branches', 'icon' => 'menu-icon icon-base bx bx-buildings', 'slug' => 'admin.branches.index', 'sort_order' => 13],
             ['type' => 'header', 'name' => 'Settings', 'sort_order' => 14],
             ['type' => 'link', 'name' => 'Sidebar Menu', 'url' => '/admin/menu', 'icon' => 'menu-icon icon-base bx bx-menu', 'slug' => 'admin.menu.index', 'sort_order' => 15],
-            ['type' => 'link', 'name' => 'Account Settings', 'url' => '/admin/account-settings', 'icon' => 'menu-icon icon-base bx bx-dock-top', 'slug' => 'admin.account.index', 'sort_order' => 16],
+            ['type' => 'link', 'name' => 'Account Settings', 'url' => '/admin/account-settings', 'icon' => 'menu-icon icon-base bx bx-cog', 'slug' => 'admin.account.index', 'sort_order' => 16],
         ];
     }
 
@@ -84,8 +84,11 @@ class AdminMenuBuilder
 
             $existing = AdminMenuItem::where('slug', $item['slug'])->first();
             if ($existing) {
-                // Keep custom labels/urls, but align section order
-                $existing->update(['sort_order' => $item['sort_order']]);
+                // Keep custom labels/urls; sync default icon + section order
+                $existing->update([
+                    'sort_order' => $item['sort_order'],
+                    'icon' => $item['icon'] ?? $existing->icon,
+                ]);
             } else {
                 AdminMenuItem::create($item);
             }

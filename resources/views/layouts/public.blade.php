@@ -31,6 +31,7 @@
 
   @include('layouts.partials.public-footer')
   @include('layouts.partials.public-scripts')
+  @include('layouts.partials.cnci-ui')
   @stack('scripts')
   @yield('scripts')
 </body>

@@ -95,33 +95,8 @@
   </div>
 
   @push('scripts')
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // SweetAlert for flash messages
-      @if(session('success'))
-      Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: '{{ session("success") }}',
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: true,
-        confirmButtonColor: '#28a745',
-        confirmButtonText: 'OK'
-      });
-      @endif
-
-      @if(session('error'))
-      Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: '{{ session("error") }}',
-        confirmButtonColor: '#dc3545',
-        confirmButtonText: 'OK'
-      });
-      @endif
-
       // Delete confirmation with SweetAlert
       document.querySelectorAll('.delete-btn').forEach(button => {
         button.addEventListener('click', function(e) {
@@ -138,7 +113,12 @@
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'Cancel',
-            reverseButtons: true
+            reverseButtons: true,
+            customClass: {
+              popup: 'cnci-swal',
+              confirmButton: 'cnci-confirm',
+              cancelButton: 'cnci-cancel',
+            },
           }).then((result) => {
             if (result.isConfirmed) {
               // Create a form and submit it

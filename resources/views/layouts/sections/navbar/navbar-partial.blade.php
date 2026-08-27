@@ -96,6 +96,18 @@ $unreadTotal = $unreadMessages + $unreadVisits;
     </div>
 
     <ul class="navbar-nav flex-row align-items-center ms-auto">
+        <!-- Theme toggle -->
+        <li class="nav-item me-2">
+            <a class="nav-link btn btn-icon btn-text-secondary rounded-pill"
+               href="javascript:void(0);"
+               id="cnciThemeToggle"
+               role="button"
+               aria-label="Toggle dark mode"
+               title="Toggle light / dark mode">
+                <i class="icon-base bx bx-moon icon-md" id="cnciThemeIcon"></i>
+            </a>
+        </li>
+
         <!-- Notifications -->
         <li class="nav-item navbar-dropdown dropdown-notifications dropdown me-3">
             <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill position-relative"

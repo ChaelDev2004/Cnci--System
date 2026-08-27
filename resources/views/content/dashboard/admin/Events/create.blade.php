@@ -11,16 +11,14 @@
     </a>
   </div>
 
-  <!-- Display validation errors -->
+  <!-- Display validation errors (SweetAlert via cnci-ui) -->
   @if($errors->any())
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-      <strong>Validation Errors:</strong>
+    <div class="alert alert-warning" style="display:none" role="alert">
       <ul class="mb-0">
         @foreach($errors->all() as $error)
           <li>{{ $error }}</li>
         @endforeach
       </ul>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   @endif
 
@@ -178,11 +176,11 @@
           </div>
         </div>
 
-        <div class="mt-3">
+        <div class="cnci-form-actions">
           <button type="submit" class="btn btn-primary" id="submitBtn">
-            <i class="fas fa-save"></i> Create Event
+            Create Event
           </button>
-          <a href="{{ route('admin.events.index') }}" class="btn btn-secondary">Cancel</a>
+          <a href="{{ route('admin.events.index') }}" class="btn btn-outline-secondary">Cancel</a>
         </div>
       </form>
     </div>
@@ -191,7 +189,6 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     // Image preview
     document.getElementById('image_file').addEventListener('change', function(e) {
@@ -216,24 +213,6 @@
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating...';
-    });
-
-    // Display validation errors with SweetAlert
-    document.addEventListener('DOMContentLoaded', function() {
-        @if($errors->any())
-            let errorMessages = '';
-            @foreach($errors->all() as $error)
-                errorMessages += '<li>{{ $error }}</li>';
-            @endforeach
-            
-            Swal.fire({
-                icon: 'warning',
-                title: 'Validation Error!',
-                html: `<ul style="text-align: left; padding-left: 20px;">${errorMessages}</ul>`,
-                confirmButtonColor: '#ffc107',
-                confirmButtonText: 'Got it!',
-            });
-        @endif
     });
 </script>
 @endpush

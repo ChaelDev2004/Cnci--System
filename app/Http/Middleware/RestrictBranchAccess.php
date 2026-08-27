@@ -42,7 +42,13 @@ class RestrictBranchAccess
         $routeName = $request->route()?->getName() ?? '';
 
         if (in_array($routeName, $this->blockedExact, true)) {
-            abort(403, 'Your branch account cannot perform this action.');
+            if ($request->expectsJson()) {
+                abort(403, 'Your branch account cannot perform this action.');
+            }
+
+            return redirect()
+                ->route('admin.dashboard')
+                ->with('denied', 'Your branch account cannot perform this action.');
         }
 
         if (in_array($routeName, $this->exact, true)) {
@@ -55,6 +61,12 @@ class RestrictBranchAccess
             }
         }
 
-        abort(403, 'Your branch account cannot access this area.');
+        if ($request->expectsJson()) {
+            abort(403, 'Your branch account cannot access this area.');
+        }
+
+        return redirect()
+            ->route('admin.dashboard')
+            ->with('denied', 'Your branch account cannot access this area.');
     }
 }

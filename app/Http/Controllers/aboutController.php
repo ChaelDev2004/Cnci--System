@@ -13,7 +13,7 @@ class aboutController extends Controller
 {
     public function index()
     {
-        $content  = AboutPageContent::first();
+        $content  = AboutPageContent::firstOrCreate([]);
         $settings = HomeSettings::first() ?? new HomeSettings();
         $leaders  = Leader::orderBy('sort_order')->get();
         $pastors  = Pastor::orderBy('sort_order')->get();

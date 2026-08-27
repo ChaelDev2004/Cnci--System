@@ -166,6 +166,10 @@ try {
     align-items: center;
     gap: 4px;
   }
+  [data-bs-theme="dark"] .view-page-card:hover {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+    border-color: rgba(133, 146, 255, 0.45);
+  }
   .welcome-hero-card {
     border: 0;
     overflow: hidden;
@@ -223,7 +227,7 @@ try {
                     <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between mb-4">
                             <div class="avatar flex-shrink-0">
-                                <img src="{{ asset('assets/img/icons/unicons/chart-success.png') }}" alt="events" class="rounded" />
+                                <span class="avatar-initial rounded bg-label-success"><i class="bx bx-calendar-event"></i></span>
                             </div>
                         </div>
                         <p class="mb-1">Total Events</p>
@@ -240,7 +244,7 @@ try {
                     <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between mb-4">
                             <div class="avatar flex-shrink-0">
-                                <img src="{{ asset('assets/img/icons/unicons/wallet-info.png') }}" alt="active events" class="rounded" />
+                                <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-check-circle"></i></span>
                             </div>
                         </div>
                         <p class="mb-1">Active Events</p>
@@ -258,7 +262,7 @@ try {
     <div class="col-12 order-1 mb-6">
         <div class="row g-4">
             <div class="col-md-6 col-xl-3">
-                <div class="card h-100 border-0 shadow-none" style="background:linear-gradient(135deg,#fff5f5 0%,#fff 70%);border:1px solid rgba(255,62,29,.12)!important;">
+                <div class="card h-100 border-0 shadow-none cnci-stat-card-danger">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="avatar">
@@ -432,7 +436,7 @@ try {
                     <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between mb-4">
                             <div class="avatar flex-shrink-0">
-                                <img src="{{ asset('assets/img/icons/unicons/paypal.png') }}" alt="pastors" class="rounded" />
+                                <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-user"></i></span>
                             </div>
                         </div>
                         <p class="mb-1">Pastors</p>
@@ -445,7 +449,7 @@ try {
                     <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between mb-4">
                             <div class="avatar flex-shrink-0">
-                                <img src="{{ asset('assets/img/icons/unicons/cc-primary.png') }}" alt="leaders" class="rounded" />
+                                <span class="avatar-initial rounded bg-label-warning"><i class="bx bx-star"></i></span>
                             </div>
                         </div>
                         <p class="mb-1">Leaders</p>

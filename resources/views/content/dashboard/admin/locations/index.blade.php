@@ -3,7 +3,7 @@
 
 @section('content')
 @if(session('success'))
-  <div class="alert alert-success mb-3">{{ session('success') }}</div>
+  <div class="alert alert-success mb-3" style="display:none">{{ session('success') }}</div>
 @endif
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">

@@ -10,9 +10,9 @@ $menuItems = $menuData[0]->menu ?? [];
     <div class="app-brand demo">
         <a href="{{ Route::has('admin.dashboard') ? route('admin.dashboard') : url('/admin/dashboard') }}" class="app-brand-link">
             <span class="app-brand-logo demo">
-                <img src="{{ $logoUrl }}" alt="{{ $brandName }} Logo" width="55" height="55" style="object-fit:contain;">
+                <img src="{{ $logoUrl }}" alt="{{ $brandName }} Logo" width="32" height="32">
             </span>
-            <span class="app-brand-text demo menu-text fw-bold ms-2">
+            <span class="app-brand-text demo menu-text fw-bold">
                 {{ $brandName }}
                 @if($brandTagline)
                     <small class="d-block fw-normal" style="font-size:0.7rem;opacity:.75;line-height:1.1;">{{ $brandTagline }}</small>

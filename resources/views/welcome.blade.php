@@ -118,6 +118,127 @@
       box-sizing: border-box;
     }
 
+    /* ─── Bible verse welcome modal ─── */
+    .verse-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .35s ease, visibility .35s ease;
+    }
+
+    .verse-modal.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .verse-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 16, 28, 0.62);
+      backdrop-filter: blur(6px);
+    }
+
+    .verse-modal__panel {
+      position: relative;
+      width: min(520px, 100%);
+      background: linear-gradient(165deg, #ffffff 0%, #f7f8fb 100%);
+      border-radius: 18px;
+      padding: 2rem 1.75rem 1.5rem;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      text-align: center;
+      transform: translateY(18px) scale(0.97);
+      transition: transform .4s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .verse-modal.is-open .verse-modal__panel {
+      transform: translateY(0) scale(1);
+    }
+
+    .verse-modal__eyebrow {
+      font-family: Inter, system-ui, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #8a94a6;
+      margin: 0 0 1rem;
+    }
+
+    .verse-modal__ornament {
+      width: 42px;
+      height: 2px;
+      margin: 0 auto 1.15rem;
+      background: linear-gradient(90deg, #c41e2a, #024886);
+      border-radius: 2px;
+    }
+
+    .verse-modal__text {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: clamp(1.35rem, 3.2vw, 1.7rem);
+      line-height: 1.45;
+      color: #1a2230;
+      margin: 0 0 1rem;
+      font-weight: 400;
+    }
+
+    .verse-modal__ref {
+      font-family: Inter, system-ui, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #024886;
+      margin: 0 0 1.5rem;
+      letter-spacing: 0.02em;
+    }
+
+    .verse-modal__close {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 0.7rem 1.6rem;
+      font-family: Inter, system-ui, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, #c41e2a, #024886);
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+
+    .verse-modal__close:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .verse-modal__x {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.85rem;
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      color: #8a94a6;
+      font-size: 1.35rem;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+
+    .verse-modal__x:hover {
+      color: #1a2230;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    body.verse-modal-open {
+      overflow: hidden;
+    }
+
     /* Welcome gallery preview */
     .home-gallery {
       padding: clamp(48px, 8vw, 88px) clamp(16px, 4vw, 32px);
@@ -567,40 +688,36 @@
           Whether you need prayer, want to know more, or visit — we're here.
         </div>
         @if(session('contact_success'))
-          <div class="alert" style="background:#e8f5e9;color:#1b5e20;padding:12px 14px;border-radius:10px;margin-bottom:14px;">
-            {{ session('contact_success') }}
-          </div>
+          <div class="alert alert-success" style="display:none">{{ session('contact_success') }}</div>
         @endif
         @if($errors->any())
-          <div class="alert" style="background:#fdecea;color:#b71c1c;padding:12px 14px;border-radius:10px;margin-bottom:14px;">
-            {{ $errors->first() }}
-          </div>
+          <div class="alert alert-danger" style="display:none">{{ $errors->first() }}</div>
         @endif
-        <form action="{{ route('contact.store') }}" method="POST">
+        <form action="{{ route('contact.store') }}" method="POST" class="cnci-minimal-form">
           @csrf
           <div class="form-row">
             <div class="form-group">
-              <label for="name"><i class="fas fa-user"></i> Name <span class="required-star">*</span></label>
+              <label for="name">Name <span class="required-star">*</span></label>
               <input type="text" id="name" name="name" value="{{ old('name') }}" placeholder="Your name" required>
             </div>
             <div class="form-group">
-              <label for="email"><i class="fas fa-envelope"></i> Email</label>
+              <label for="email">Email</label>
               <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="you@example.com">
             </div>
           </div>
           <div class="form-group">
             <div class="subject-label">
-              <label for="subject"><i class="fas fa-tag"></i> Subject</label>
+              <label for="subject">Subject</label>
               <span>Get in touch with Us</span>
             </div>
             <input type="text" id="subject" name="subject" placeholder="How can we help?" value="{{ old('subject', 'Prayer / Visit') }}">
           </div>
           <div class="form-group">
-            <label for="message"><i class="fas fa-comment-dots"></i> Message <span class="required-star">*</span></label>
+            <label for="message">Message <span class="required-star">*</span></label>
             <textarea id="message" name="message" placeholder="Write your message…" required>{{ old('message') }}</textarea>
           </div>
           <button type="submit" class="submit-btn">
-            <i class="fas fa-paper-plane"></i> SUBMIT
+            Send message
           </button>
         </form>
       </div>
@@ -608,7 +725,22 @@
   </section>
 
   @include('layouts.partials.public-footer')
+
+  {{-- Bible verse modal — random verse on every landing open --}}
+  <div class="verse-modal" id="verseModal" role="dialog" aria-modal="true" aria-labelledby="verseModalText" hidden>
+    <div class="verse-modal__backdrop" data-verse-close></div>
+    <div class="verse-modal__panel">
+      <button type="button" class="verse-modal__x" data-verse-close aria-label="Close">&times;</button>
+      <p class="verse-modal__eyebrow">Word for today</p>
+      <div class="verse-modal__ornament" aria-hidden="true"></div>
+      <p class="verse-modal__text" id="verseModalText"></p>
+      <p class="verse-modal__ref" id="verseModalRef"></p>
+      <button type="button" class="verse-modal__close" data-verse-close>Amen</button>
+    </div>
+  </div>
+
   @include('layouts.partials.public-scripts')
+  @include('layouts.partials.cnci-ui')
 
   <!-- ─── SCRIPTS ─────────────────────────────────────────────── -->
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
@@ -808,6 +940,98 @@
     pastorDisplay.innerHTML = `<i class="fas fa-user-pastor"></i> Pastored by: <strong>${pastorName}</strong>`;
   }
 }
+  </script>
+
+  <script>
+  (function () {
+    const verses = [
+      { text: 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.', ref: 'John 3:16' },
+      { text: 'I can do all things through Christ who strengthens me.', ref: 'Philippians 4:13' },
+      { text: 'The Lord is my shepherd; I shall not want.', ref: 'Psalm 23:1' },
+      { text: 'Trust in the Lord with all your heart and lean not on your own understanding.', ref: 'Proverbs 3:5' },
+      { text: 'Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.', ref: 'Joshua 1:9' },
+      { text: 'Come to me, all you who are weary and burdened, and I will give you rest.', ref: 'Matthew 11:28' },
+      { text: 'Jesus said to him, “I am the way and the truth and the life. No one comes to the Father except through me.”', ref: 'John 14:6' },
+      { text: 'And we know that in all things God works for the good of those who love him.', ref: 'Romans 8:28' },
+      { text: 'The Lord bless you and keep you; the Lord make his face shine on you and be gracious to you.', ref: 'Numbers 6:24–25' },
+      { text: 'Delight yourself in the Lord, and he will give you the desires of your heart.', ref: 'Psalm 37:4' },
+      { text: 'Cast all your anxiety on him because he cares for you.', ref: '1 Peter 5:7' },
+      { text: 'Your word is a lamp to my feet and a light to my path.', ref: 'Psalm 119:105' },
+      { text: 'But seek first his kingdom and his righteousness, and all these things will be given to you as well.', ref: 'Matthew 6:33' },
+      { text: 'Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.', ref: 'Philippians 4:6' },
+      { text: 'Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!', ref: '2 Corinthians 5:17' },
+      { text: 'Love is patient, love is kind. It does not envy, it does not boast, it is not proud.', ref: '1 Corinthians 13:4' },
+      { text: 'This is the day that the Lord has made; let us rejoice and be glad in it.', ref: 'Psalm 118:24' },
+      { text: 'Let your light shine before others, that they may see your good deeds and glorify your Father in heaven.', ref: 'Matthew 5:16' },
+      { text: 'God is our refuge and strength, an ever-present help in trouble.', ref: 'Psalm 46:1' },
+      { text: 'He has shown you, O mortal, what is good. And what does the Lord require of you? To act justly and to love mercy and to walk humbly with your God.', ref: 'Micah 6:8' },
+      { text: 'Go therefore and make disciples of all nations… teaching them to obey everything I have commanded you.', ref: 'Matthew 28:19–20' },
+      { text: 'The name of the Lord is a fortified tower; the righteous run to it and are safe.', ref: 'Proverbs 18:10' },
+      { text: 'Create in me a clean heart, O God, and renew a right spirit within me.', ref: 'Psalm 51:10' },
+      { text: 'Faith comes from hearing, and hearing through the word of Christ.', ref: 'Romans 10:17' },
+      { text: 'Be still, and know that I am God.', ref: 'Psalm 46:10' },
+      { text: 'Greater love has no one than this: to lay down one’s life for one’s friends.', ref: 'John 15:13' },
+      { text: 'The joy of the Lord is your strength.', ref: 'Nehemiah 8:10' },
+      { text: 'Ask and it will be given to you; seek and you will find; knock and the door will be opened to you.', ref: 'Matthew 7:7' },
+      { text: 'In the beginning God created the heavens and the earth.', ref: 'Genesis 1:1' },
+      { text: 'Blessed are the peacemakers, for they will be called children of God.', ref: 'Matthew 5:9' },
+    ];
+
+    const modal = document.getElementById('verseModal');
+    const textEl = document.getElementById('verseModalText');
+    const refEl = document.getElementById('verseModalRef');
+    if (!modal || !textEl || !refEl) return;
+
+    const LAST_KEY = 'cnci-last-verse-ref';
+
+    function pickVerse() {
+      let last = '';
+      try { last = sessionStorage.getItem(LAST_KEY) || ''; } catch (e) {}
+      const pool = verses.filter((v) => v.ref !== last);
+      const list = pool.length ? pool : verses;
+      const verse = list[Math.floor(Math.random() * list.length)];
+      try { sessionStorage.setItem(LAST_KEY, verse.ref); } catch (e) {}
+      return verse;
+    }
+
+    function openModal() {
+      const verse = pickVerse();
+      textEl.textContent = '“' + verse.text + '”';
+      refEl.textContent = '— ' + verse.ref;
+      modal.hidden = false;
+      requestAnimationFrame(function () {
+        modal.classList.add('is-open');
+        document.body.classList.add('verse-modal-open');
+      });
+    }
+
+    function closeModal() {
+      modal.classList.remove('is-open');
+      document.body.classList.remove('verse-modal-open');
+      setTimeout(function () {
+        modal.hidden = true;
+      }, 320);
+    }
+
+    modal.querySelectorAll('[data-verse-close]').forEach(function (el) {
+      el.addEventListener('click', closeModal);
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+        closeModal();
+      }
+    });
+
+    // Show on every landing page open
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(openModal, 450);
+      });
+    } else {
+      setTimeout(openModal, 450);
+    }
+  })();
   </script>
 
 </body>

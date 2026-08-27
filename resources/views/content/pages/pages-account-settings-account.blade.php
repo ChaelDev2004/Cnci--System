@@ -4,10 +4,10 @@
 
 @section('content')
 @if(session('success'))
-  <div class="alert alert-success mb-3">{{ session('success') }}</div>
+  <div class="alert alert-success mb-3" style="display:none">{{ session('success') }}</div>
 @endif
 @if($errors->any())
-  <div class="alert alert-danger mb-3">
+  <div class="alert alert-danger mb-3" style="display:none">
     <ul class="mb-0">
       @foreach($errors->all() as $error)
         <li>{{ $error }}</li>
@@ -82,7 +82,9 @@
           </div>
 
           <div class="mt-4">
-            <button type="submit" class="btn btn-primary">Save Profile</button>
+            <div class="cnci-form-actions" style="margin-top:0;padding-top:0;border-top:none;">
+              <button type="submit" class="btn btn-primary">Save Profile</button>
+            </div>
           </div>
         </form>
       </div>
@@ -145,7 +147,7 @@
             </div>
           </div>
 
-          <div class="mt-4">
+          <div class="cnci-form-actions">
             <button type="submit" class="btn btn-primary">Save Branding</button>
           </div>
         </form>
