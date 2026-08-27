@@ -401,12 +401,115 @@
     text-decoration: none;
     letter-spacing: 0.01em;
     transition: transform .15s ease, box-shadow .15s ease;
+    margin-top: 0.35rem;
   }
 
   .public-footer-cta:hover {
     transform: translateY(-1px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     color: #024886;
+  }
+
+  /* Social icons (Facebook / Instagram) */
+  .public-footer-social.example-2 {
+    list-style: none;
+    margin: 0 0 1.15rem;
+    padding: 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .example-2 .icon-content {
+    margin: 0 10px 0 0;
+    position: relative;
+  }
+
+  .example-2 .icon-content:last-child {
+    margin-right: 0;
+  }
+
+  .example-2 .icon-content .tooltip {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 5px;
+    opacity: 0;
+    visibility: hidden;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .example-2 .icon-content:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    top: -50px;
+  }
+
+  .example-2 .icon-content a {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    color: #4d4d4d;
+    background-color: #fff;
+    transition: all 0.3s ease-in-out;
+    text-decoration: none;
+  }
+
+  .example-2 .icon-content a:hover {
+    box-shadow: 3px 2px 45px 0px rgb(0 0 0 / 12%);
+    color: white;
+  }
+
+  .example-2 .icon-content a svg {
+    position: relative;
+    z-index: 1;
+    width: 22px;
+    height: 22px;
+  }
+
+  .example-2 .icon-content a .filled {
+    position: absolute;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background-color: #000;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .example-2 .icon-content a:hover .filled {
+    height: 100%;
+  }
+
+  .example-2 .icon-content a[data-social="facebook"] .filled,
+  .example-2 .icon-content a[data-social="facebook"] ~ .tooltip {
+    background-color: #1877f2;
+  }
+
+  .example-2 .icon-content a[data-social="instagram"] .filled,
+  .example-2 .icon-content a[data-social="instagram"] ~ .tooltip {
+    background: linear-gradient(
+      45deg,
+      #405de6,
+      #5b51db,
+      #b33ab4,
+      #c135b4,
+      #e1306c,
+      #fd1f1f
+    );
   }
 
   .public-footer-col h4 {
@@ -515,6 +618,12 @@
     .public-footer-tagline {
       margin-left: auto;
       margin-right: auto;
+    }
+    .public-footer-social.example-2 {
+      justify-content: center;
+    }
+    .example-2 .icon-content {
+      margin: 0 8px;
     }
     .public-footer-links,
     .public-footer-contact {
